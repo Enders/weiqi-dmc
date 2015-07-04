@@ -1,15 +1,15 @@
-defmodule Weiqi do
-  alias Weiqi.GTPCommands, as: GTPCommand
+defmodule WeiqiDMC do
+  alias WeiqiDMC.GTPCommands, as: GTPCommand
 
-  def command_loop do
+  def command_loop(board) do
     case IO.gets("") |> String.strip do
       "quit" ->
         IO.binwrite "= bye\n\n"
       command ->
-        command |> GTPCommand.process
+        command |> GTPCommand.process(board)
                 |> log_and_return(command)
                 |> IO.binwrite
-        command_loop
+        command_loop board
     end
   end
 
@@ -21,6 +21,7 @@ defmodule Weiqi do
   end
 
   def start_gtp_server do
-    command_loop
+    {:ok, board} = WeiqiDMC.Board.start_link
+    command_loop board
   end
 end
