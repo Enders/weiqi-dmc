@@ -4,7 +4,7 @@ defmodule WeiqiDMC.GTPCommands do
 
   @gtp_commands [:version, :name, :protocol_version, :list_commands, :quit,
                  :known_command, :boardsize, :clear_board, :komi, :fixed_handicap,
-                 :play, :genmove, :undo, :showboard]
+                 :play, :genmove, :showboard]
 
   def process(["version"], _) do
     {:ok, "1.0"}
@@ -61,7 +61,7 @@ defmodule WeiqiDMC.GTPCommands do
   end
 
   def process(["showboard"], board) do
-    {:ok, Board.to_string(board)}
+    {:ok, Board.showboard(board)}
   end
 
   def process(["play", color, coordinate], board) do
@@ -72,11 +72,6 @@ defmodule WeiqiDMC.GTPCommands do
   end
 
   def process(["genmove"|_], board) do
-    #TODO: implement
-    {:ko, "not implemented"}
-  end
-
-  def process(["undo"], _) do
     #TODO: implement
     {:ko, "not implemented"}
   end
