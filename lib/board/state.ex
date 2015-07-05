@@ -52,10 +52,10 @@ defmodule WeiqiDMC.Board.State do
   defp row_to_string({row_data, row}, size) do
     row_data |> Enum.with_index |> Enum.map(fn ({value, column}) ->
       base_value = case value do
-        0 -> "."
-        1 -> "X"
-        2 -> "O"
-        3 -> "#"
+        :empty -> "."
+        :black -> "X"
+        :white -> "O"
+        :ko    -> "#"
       end
       if column == 0 do
         base_value = String.rjust "#{size-row} #{base_value}", 4

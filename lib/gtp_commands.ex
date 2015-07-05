@@ -4,7 +4,7 @@ defmodule WeiqiDMC.GTPCommands do
 
   @gtp_commands [:version, :name, :protocol_version, :list_commands, :quit,
                  :known_command, :boardsize, :clear_board, :komi, :fixed_handicap,
-                 :play, :genmove, :showboard]
+                 :play, :genmove, :showboard, :set_game]
 
   def process(["version"], _) do
     {:ok, "1.0"}
@@ -16,6 +16,10 @@ defmodule WeiqiDMC.GTPCommands do
 
   def process(["protocol_version"], _) do
     {:ok, "2"}
+  end
+
+  def process(["set_game", "Go"], _) do
+    {:ok, "ok"}
   end
 
   def process(["known_command", command], _) do
@@ -71,9 +75,11 @@ defmodule WeiqiDMC.GTPCommands do
     end
   end
 
-  def process(["genmove"|_], board) do
-    #TODO: implement
-    {:ko, "not implemented"}
+  def process(["genmove", color], board) do
+    case Board.generate_move(board, color) do
+      :ko  -> {:ko, "illegal move"}
+      move -> {:ok, move}
+    end
   end
 
   def process(command, board) when is_binary(command) do

@@ -1,17 +1,16 @@
 defmodule WeiqiDMC.Board do
 
-  @empty 0
-  @black 1
-  @white 2
-  @ko    3
-
-  def empty do @empty end
-  def black do @black end
-  def white do @white end
-  def ko    do @ko    end
-
   def start_link do
     Agent.start_link fn -> %WeiqiDMC.Board.State{size: 19, board: empty_board(19)} end
+  end
+
+  #GTP API
+  #--------
+
+  #TODO: move into gtp_commands instead?
+
+  def state(board_agent) do
+    Agent.get(board_agent, &(&1))
   end
 
   def showboard(board_agent) do
@@ -23,12 +22,28 @@ defmodule WeiqiDMC.Board do
                                                     captured_black: 0, captured_white: 0 } end
   end
 
-  def change_size(board, size) do
+  def change_size(board_agent, size) do
     cond do
       Enum.member?([9,13,19], size) ->
-        Agent.update board, fn state -> %{state | size: size, board: empty_board(size), moves: [],
-                                                  captured_black: 0, captured_white: 0  } end
+        Agent.update board_agent, fn state -> %{state | size: size, board: empty_board(size), moves: [],
+                                                        captured_black: 0, captured_white: 0  } end
       true -> :ko
+    end
+  end
+
+  def generate_move(board_agent, color) do
+    state = Agent.get(board_agent, &(&1))
+    case WeiqiDMC.Player.generate_move(state, normalize_color(color)) do
+      :resign -> "resign"
+      :pass ->
+        play_move(board_agent, "pass", color)
+        "pass"
+      index ->
+        coordinate = index_to_coordinate(index, state.size)
+        case play_move(board_agent, coordinate, color) do
+          {:ok, _} -> coordinate
+          {:ko, _} -> "resign"
+        end
     end
   end
 
@@ -42,7 +57,7 @@ defmodule WeiqiDMC.Board do
 
   def set_handicap(board_agent, handicap) do
     %WeiqiDMC.Board.State{size: size} = Agent.get(board_agent, &(&1))
-    play_moves board_agent, handicap_coordinates(size, handicap), @black
+    play_moves board_agent, handicap_coordinates(size, handicap), :black
   end
 
   def play_moves(board_agent, moves, color) do
@@ -70,6 +85,9 @@ defmodule WeiqiDMC.Board do
     end
   end
 
+  #Board API
+  #---------
+
   def compute_moves(state, [], _) do
     {:ok, state}
   end
@@ -83,39 +101,52 @@ defmodule WeiqiDMC.Board do
 
   def compute_move(state, coordinate, color) do
 
-    coordinate_index = coordinate_to_index(coordinate, state.size)
+    move_index = normalize_index(coordinate, state.size)
 
     surroundings = [{-1, 0}, {1, 0}, {0, 1}, {0, -1}]
-      |> Enum.map(&compute_index_from_delta(&1, coordinate_index, state.size))
+      |> Enum.map(&compute_index_from_delta(&1, move_index, state.size))
       |> Enum.filter(fn (index) -> index != :invalid end)
 
-    empty        = surroundings |> Enum.filter(fn (index) -> Enum.at(state.board, index) == empty end)
+    empty        = surroundings |> Enum.filter(fn (index) -> Enum.at(state.board, index) == :empty end)
 
     other_player = surroundings |> Enum.filter(fn (index) -> Enum.at(state.board, index) == opposite_color(color) end)
                                 |> Enum.map(&compute_group(&1, state))
-                                |> Enum.uniq(fn ({group, liberties}) -> Enum.sort(group) end)
+                                |> Enum.uniq(fn ({group, _}) -> Enum.sort(group) end)
 
     same_player  = surroundings |> Enum.filter(fn (index) -> Enum.at(state.board, index) == color end)
                                 |> Enum.map(&compute_group(&1, state))
-                                |> Enum.uniq(fn ({group, liberties}) -> Enum.sort(group) end)
+                                |> Enum.uniq(fn ({group, _}) -> Enum.sort(group) end)
 
     liberties_same_player_group = Enum.map(same_player, fn ({_, liberties}) ->
-        length Enum.filter(liberties, fn (liberty) -> liberty != coordinate_index end)
+        length Enum.filter(liberties, fn (liberty) -> liberty != move_index end)
       end) |> Enum.sum
 
-    capturing = Enum.filter(other_player, fn({group, liberties}) ->
-      liberties == [coordinate_index]
+    capturing = Enum.filter(other_player, fn({_, liberties}) ->
+      liberties == [move_index]
     end)
 
     cond do
       liberties_same_player_group <= 1 and length(empty) == 0 and length(capturing) == 0 -> {:ko, state}
       true ->
         {board, captured} = process_capture(state.board, capturing, 0)
-        board = List.replace_at(board, coordinate_index, color)
+
+        board = board |> Enum.with_index |> Enum.map(fn {value, index} ->
+          cond do
+            index == move_index -> color
+            value == :ko        -> :empty
+            true                -> value
+          end
+        end)
+
+        if captured == 1 do
+          ko_coordinate = capturing |> List.first |> elem(0) |> List.first
+          board = List.replace_at(board, ko_coordinate, :ko)
+        end
+
         {:ok,  %{state | board: board,
-                         moves: state.moves ++ [coordinate],
-                         captured_white: state.captured_white + (if color == black do captured else 0 end) ,
-                         captured_black: state.captured_black + (if color == white do captured else 0 end)  } }
+                         moves: state.moves ++ [normalize_coordinate(coordinate, state.size)],
+                         captured_white: state.captured_white + (if color == :black do captured else 0 end) ,
+                         captured_black: state.captured_black + (if color == :white do captured else 0 end)  } }
     end
 
 
@@ -138,12 +169,12 @@ defmodule WeiqiDMC.Board do
           false
         else
           value = WeiqiDMC.Board.State.board_value(state, index)
-          (value == color or value == empty or value == ko) and !Enum.member?(visited, index)
+          (value == color or value == :empty or value == :ko) and !Enum.member?(visited, index)
         end
       end)
 
     case WeiqiDMC.Board.State.board_value(state, coordinate) do
-      @empty -> compute_group_inc(rest, visited ++ [coordinate], state, {group, liberties++[coordinate]}, color)
+      :empty -> compute_group_inc(rest, visited ++ [coordinate], state, {group, liberties++[coordinate]}, color)
       color  -> compute_group_inc(rest ++ surroundings, visited ++ [coordinate], state, {group++[coordinate], liberties}, color)
     end
   end
@@ -162,7 +193,7 @@ defmodule WeiqiDMC.Board do
     {board, captured}
   end
 
-  def process_capture(board, [{group, liberties}|rest], captured) do
+  def process_capture(board, [{group, _}|rest], captured) do
     process_capture process_capture_group(board, group), rest, captured + length(group)
   end
 
@@ -171,7 +202,7 @@ defmodule WeiqiDMC.Board do
   end
 
   def process_capture_group(board, [capture|rest]) do
-    process_capture_group List.replace_at(board, capture, empty), rest
+    process_capture_group List.replace_at(board, capture, :empty), rest
   end
 
   #Utilities
@@ -208,17 +239,13 @@ defmodule WeiqiDMC.Board do
     end
   end
 
-  def opposite_color(color) do
-    case color do
-      @black -> @white
-      @white -> @black
-    end
-  end
+  def opposite_color(:black) do :white end
+  def opposite_color(:white) do :black end
 
   def normalize_color(color) when is_bitstring(color) do
     case color |> String.downcase |> String.first do
-      "b" -> @black
-      "w" -> @white
+      "b" -> :black
+      "w" -> :white
     end
   end
 
@@ -230,6 +257,12 @@ defmodule WeiqiDMC.Board do
     row*size + column
   end
 
+  def index_to_coordinate(index, size) do
+    row    = round Float.floor(index / size)
+    column = rem index, size
+    "#{String.at("ABCDEFGHJKLMNOPQRSTUVWXYZ", column)}#{row+1}"
+  end
+
   def coordinate_to_index(coordinate, size) do
     normalized_column = coordinate |> String.upcase |> String.to_char_list |> List.first
     row               = String.to_integer String.slice(coordinate, 1,String.length(coordinate)-1)
@@ -237,7 +270,23 @@ defmodule WeiqiDMC.Board do
     (size-row) * size + column
   end
 
+  def normalize_coordinate(coordinate, _) when is_bitstring(coordinate) do
+    coordinate
+  end
+
+  def normalize_coordinate(coordinate, size) do
+    index_to_coordinate coordinate, size
+  end
+
+  def normalize_index(index, size) when is_bitstring(index) do
+    coordinate_to_index index, size
+  end
+
+  def normalize_index(index, _) do
+    index
+  end
+
   defp empty_board(size) do
-    List.duplicate @empty, size*size
+    List.duplicate :empty, size*size
   end
 end
