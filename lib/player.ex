@@ -1,4 +1,7 @@
 defmodule WeiqiDMC.Player do
+
+  alias WeiqiDMC.Board.State
+
   def generate_move(state, color) do
     valid_moves = generate_valid_moves state, color
     if Enum.empty?(valid_moves) do
@@ -11,14 +14,12 @@ defmodule WeiqiDMC.Player do
 
   def generate_valid_moves(state, color) do
     state.board
-      |> Enum.with_index
-      |> Enum.filter(fn {value, index} -> value == :empty end)
-      |> Enum.filter(fn {_, index} -> valid_move?(index, color, state) end)
-      |> Enum.map(fn {_, index} -> index end)
+      |> State.empty_coordinates
+      |> Enum.filter(fn coordinate -> valid_move?(coordinate, color, state) end)
   end
 
-  def valid_move?(index, color, state) do
-    {result, _} = WeiqiDMC.Board.compute_move(state, index, color)
+  def valid_move?(coordinate, color, state) do
+    {result, _} = WeiqiDMC.Board.compute_move(state, coordinate, color)
     result == :ok
   end
 end

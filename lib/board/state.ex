@@ -1,34 +1,72 @@
 defmodule WeiqiDMC.Board.State do
+
+  alias WeiqiDMC.Helpers
+
   defstruct size: 19,
             handicap: 0,
             komi: 6.5,
             captured_black: 0,
             captured_white: 0,
             moves: [],
-            board: []
+            groups: [],
+            coordinate_ko: nil,
+            board: nil
 
-  def update_board(state, coordinate, value) when is_integer(coordinate) do
-    %{state | board: List.replace_at(state.board, coordinate, value)}
+  def to_list(board) do
+    board
+      |> Dict.to_list
+      |> Enum.map(fn ({row, column_dict}) ->
+        column_dict
+          |> Dict.to_list
+          |> Enum.map(fn ({column, value}) ->
+            {row, column, value}
+          end)
+      end)
+      |> List.flatten
   end
 
-  def update_board(state, coordinate, value) when is_bitstring(coordinate) do
-    %{state | board: List.replace_at(state.board, WeiqiDMC.Board.coordinate_to_index(coordinate, state.size), value)}
+  def empty_coordinates(board) do
+    board |> to_list
+          |> Enum.filter(fn({_, _, value}) -> value == :empty end)
+          |> Enum.map(fn({row, column, _}) -> {row, column} end)
   end
 
-  def update_board(state, {row, column}, value) do
-    %{state | board: List.replace_at(state.board, row*state.size + column, value)}
+  def update_board(board, coordinate, value) when is_bitstring(coordinate) do
+    update_board board, Helpers.coordinate_string_to_tuple(coordinate), value
   end
 
-  def board_value(state, coordinate) when is_integer(coordinate) do
-    Enum.at state.board, coordinate
+  def update_board(board, {row, column}, value) do
+    Dict.put board, row, Dict.put(Dict.fetch!(board, row), column, value)
   end
 
-  def board_value(state, coordinate) when is_bitstring(coordinate) do
-    Enum.at state.board, WeiqiDMC.Board.coordinate_to_index(coordinate, state.size)
+  def board_value(board, coordinate) when is_bitstring(coordinate) do
+    board_value board, Helpers.coordinate_string_to_tuple(coordinate)
   end
 
-  def board_value(state, {row, column}) do
-    Enum.at state.board, row*state.size + column
+  def board_value(board, {row, column}) do
+    Dict.fetch! Dict.fetch!(board, row), column
+  end
+
+  def empty_board(size) do
+    build_row_dict HashDict.new, size, size, :empty
+  end
+
+  def fill_board(size, with) do
+    build_row_dict HashDict.new, size, size, with
+  end
+
+  def build_row_dict(dict, 0, _, _) do dict end
+  def build_row_dict(dict, row, size, fill_with) do
+    build_row_dict Dict.put(dict, row, build_column_dict(HashDict.new, size, fill_with)), row - 1, size, fill_with
+  end
+
+  def build_column_dict(dict, 0, _) do dict end
+  def build_column_dict(dict, column, fill_with) do
+    build_column_dict Dict.put(dict, column, fill_with), column - 1, fill_with
+  end
+
+  def board_size(board) do
+    Dict.size board
   end
 
   def to_string(state) do
@@ -36,7 +74,13 @@ defmodule WeiqiDMC.Board.State do
                                             |> String.graphemes
                                             |> Enum.join(" ")
 
-    board = state.board |> Enum.chunk(state.size)
+    board = state.board |> to_list
+                        |> Enum.sort(fn ({row_1, col_1, _}, {row_2, col_2, _}) ->
+                             row_1 < row_2 or (row_1 == row_2 and col_1 < col_2)
+                           end)
+                        |> Enum.map(fn (x) -> elem(x,2) end)
+                        |> Enum.chunk(state.size)
+                        |> Enum.reverse
                         |> Enum.with_index
                         |> Enum.map(&row_to_string(&1, state.size))
                         |> Enum.join("\n")
