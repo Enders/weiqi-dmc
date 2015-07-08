@@ -1,15 +1,19 @@
 defmodule WeiqiDMC do
   alias WeiqiDMC.GTPCommands, as: GTPCommand
 
-  def command_loop(board) do
-    case IO.gets("") |> String.strip do
+  def command_loop(state_agent) do
+    command = IO.gets("")
+    if command == :eof do
+      command = "quit"
+    end
+    case command |> String.strip do
       "quit" ->
         IO.binwrite "= bye\n\n"
       command ->
-        command |> GTPCommand.process(board)
+        command |> GTPCommand.process(state_agent)
                 |> log_and_return(command)
                 |> IO.binwrite
-        command_loop board
+        command_loop state_agent
     end
   end
 
@@ -21,7 +25,7 @@ defmodule WeiqiDMC do
   end
 
   def start_gtp_server do
-    {:ok, board} = WeiqiDMC.Board.start_link
-    command_loop board
+    {:ok, state_agent} = WeiqiDMC.GTPCommands.start_link
+    command_loop state_agent
   end
 end

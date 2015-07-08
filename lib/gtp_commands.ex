@@ -1,17 +1,26 @@
 defmodule WeiqiDMC.GTPCommands do
 
-  alias WeiqiDMC.Board, as: Board
+  alias WeiqiDMC.Board
+  alias WeiqiDMC.Board.State
 
   @gtp_commands [:version, :name, :protocol_version, :list_commands, :quit,
                  :known_command, :boardsize, :clear_board, :komi, :fixed_handicap,
                  :play, :genmove, :showboard, :set_game]
+
+  def start_link do
+    Agent.start_link fn -> %State{size: 19, board: State.empty_board(19)} end
+  end
+
+  def state(state_agent) do
+    Agent.get(state_agent, &(&1))
+  end
 
   def process(["version"], _) do
     {:ok, "1.0"}
   end
 
   def process(["name"], _) do
-    {:ok, "elixir-gtp"}
+    {:ok, "weiqi-dmc"}
   end
 
   def process(["protocol_version"], _) do
@@ -30,60 +39,82 @@ defmodule WeiqiDMC.GTPCommands do
     {:ok,  @gtp_commands |> Enum.join " " }
   end
 
-  def process(["boardsize", size], board) do
+  def process(["boardsize", size], state_agent) do
     try do
-      case Board.change_size(board, String.to_integer(size)) do
+      case Board.change_size(state(state_agent), String.to_integer(size)) do
         :ko -> {:ko, "unacceptable size"}
-          _ -> {:ok, ""}
+        state ->
+          Agent.update state_agent, fn _ -> state end
+          {:ok, ""}
       end
     rescue
       _ in ArgumentError -> {:ko, "invalid board size value"}
     end
   end
 
-  def process(["komi", komi], board) do
+  def process(["showboard"], state_agent) do
+    {:ok, WeiqiDMC.Board.State.to_string(state(state_agent))}
+  end
+
+  def process(["clear_board"], state_agent) do
+    state = Board.clear_board state(state_agent)
+    Agent.update state_agent, fn _ -> state end
+    {:ok, ""}
+  end
+
+  def process(["komi", komi], state_agent) do
     try do
-      {:ok, Board.change_komi(board, String.to_float(komi))}
+      state = Board.change_komi state(state_agent), String.to_float(komi)
+      Agent.update state_agent, fn _ -> state end
+      {:ok, ""}
     rescue
       _ in ArgumentError -> {:ko, "invalid komi value"}
     end
   end
 
-  def process(["fixed_handicap", handicap], board) do
+  def process(["fixed_handicap", handicap], state_agent) do
     try do
-      case Board.set_handicap(board, String.to_integer(handicap)) do
-        :ko -> {:ko, "invalid handicap"}
-          _ -> {:ok, ""}
+      case Board.set_handicap(state(state_agent), String.to_integer(handicap)) do
+        {:ko, _} ->
+          {:ko, "invalid handicap"}
+        {:ok, state} ->
+          Agent.update state_agent, fn _ -> state end
+          {:ok, ""}
       end
     rescue
       _ in ArgumentError -> {:ko, "invalid handicap value"}
     end
   end
 
-  def process(["clear_board"], board) do
-    {:ok, Board.clear_board(board)}
-  end
-
-  def process(["showboard"], board) do
-    {:ok, Board.showboard(board)}
-  end
-
-  def process(["play", color, coordinate], board) do
-    case Board.play_move(board, coordinate, color) do
-      :ko -> {:ko, "illegal move"}
-        _ -> {:ok, ""}
+  def process(["play", color, coordinate], state_agent) do
+    state = state(state_agent) |> Board.force_next_player(color)
+    coordinate = Helpers.coordinate_string_to_tuple(coordinate)
+    case Board.compute_move(state, coordinate) do
+      {:ok, state} ->
+        Agent.update state_agent, fn _ -> state end
+        {:ok, ""}
+      {:ko, _ }    ->  {:ko, "illegal move"}
     end
   end
 
-  def process(["genmove", color], board) do
-    case Board.generate_move(board, color) do
-      :ko  -> {:ko, "illegal move"}
-      move -> {:ok, move}
+  def process(["genmove", color], state_agent) do
+    state = state(state_agent) |> Board.force_next_player(color)
+    case WeiqiDMC.Player.MCRave.generate_move(state, 1000) do
+      :ko     -> {:ko, "illegal state"}
+      :resign -> {:ok, "resign"}
+      :pass   ->
+        {:ok, state} = Board.compute_move(state, :pass)
+        Agent.update state_agent, fn _ -> state end
+        {:ok, "pass"}
+      {row, column} ->
+        {:ok, state} = Board.compute_move(state, {row, column})
+        Agent.update state_agent, fn _ -> state end
+        {:ok, Helpers.coordinate_tuple_to_string({row, column})}
     end
   end
 
-  def process(command, board) when is_binary(command) do
-    command |> String.split(" ") |> process(board) |> prepare_output
+  def process(command, state_agent) when is_binary(command) do
+    command |> String.split(" ") |> process(state_agent) |> prepare_output
   end
 
   def process(_, _) do

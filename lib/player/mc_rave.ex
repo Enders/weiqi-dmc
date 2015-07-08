@@ -5,14 +5,6 @@ defmodule WeiqiDMC.Player.MCRave do
   @constant_bias        0
   @heuristic_confidence 10
 
-  defmodule WeiqiDMC.Player.MCRave.State do
-    defstruct n: HashDict.new,
-              q: HashDict.new,
-              n_tilde: HashDict.new,
-              q_tilde: HashDict.new,
-              tree: nil
-  end
-
   def board_hash(board) do
     #Copied from State.to_list ...
     #TODO: any other idea?
@@ -27,28 +19,32 @@ defmodule WeiqiDMC.Player.MCRave do
       end)
   end
 
+  #Useful for testing
+
+  def state_hash(state) when is_atom(state) do state end
+
   def state_hash(state) do
     board_hash state.board
   end
 
-  def generate_move(state, color, think_time_ms) do
+  def generate_move(state, think_time_ms) do
     {mega, secs, micro} = :os.timestamp
-    mc_rave_state = mc_rave {state, color},
+    mc_rave_state = mc_rave state,
                             {mega, secs, micro+think_time_ms*1000}, think_time_ms*1000,
                             %WeiqiDMC.Player.MCRave.State{tree: {state_hash(state), []}}
     select_move state, mc_rave_state
   end
 
-  def mc_rave({initial_state, initial_color}, target_time, remaining_time, mc_rave_state) when remaining_time < 0 do
+  def mc_rave(state, target_time, remaining_time, mc_rave_state) when remaining_time < 0 do
     mc_rave_state
   end
 
-  def mc_rave(initial, target_time, remaining_time, mc_rave_state) do
-    mc_rave initial, target_time, :timer.now_diff(target_time, :os.timestamp), simulate(initial, mc_rave_state)
+  def mc_rave(state, target_time, remaining_time, mc_rave_state) do
+    mc_rave state, target_time, :timer.now_diff(target_time, :os.timestamp), simulate(state, mc_rave_state)
   end
 
-  def simulate({initial_state, initial_color}, mc_rave_state) do
-    {known_states, known_actions, mc_rave_state} = sim_tree    [initial_state], [], mc_rave_state
+  def simulate(state, mc_rave_state) do
+    {known_states, known_actions, mc_rave_state} = sim_tree    [state], [], mc_rave_state
     {missing_states, missing_actions, outcome}   = sim_default [(known_states|>List.first)], []
     backup mc_rave_state, known_states, known_actions, missing_actions, outcome
   end
@@ -60,7 +56,7 @@ defmodule WeiqiDMC.Player.MCRave do
     updated_n = Dict.get(mc_rave_state.n, key, 0) + 1
     updated_q = (outcome - Dict.get(mc_rave_state.q, key, 0))/updated_n
     mc_rave_state = %{mc_rave_state | n: Dict.put(mc_rave_state.n, key, updated_n),
-                                      q: Dict.put(mc_rave_state.n, key, updated_q) }
+                                      q: Dict.put(mc_rave_state.q, key, updated_q) }
 
     all_actions = ([known_action|known_actions]++missing_actions)
     mc_rave_state = backup_tilde mc_rave_state, state_hash, all_actions, length(all_actions), outcome
@@ -80,8 +76,8 @@ defmodule WeiqiDMC.Player.MCRave do
         key = {state_hash, action_u}
         updated_n_tilde = Dict.get(mc_rave_state.n_tilde, key, 0) + 1
         updated_q_tilde = (outcome - Dict.get(mc_rave_state.q_tilde, key, 0))/updated_n_tilde
-        mc_rave_state = %{mc_rave_state | n_tilde: Dict.put(mc_rave_state.n, key, updated_n_tilde),
-                                          q_tilde: Dict.put(mc_rave_state.n, key, updated_q_tilde) }
+        mc_rave_state = %{mc_rave_state | n_tilde: Dict.put(mc_rave_state.n_tilde, key, updated_n_tilde),
+                                          q_tilde: Dict.put(mc_rave_state.q_tilde, key, updated_q_tilde) }
 
       end
     end
@@ -116,7 +112,7 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def select_move(state, mc_rave_state) do
-    legal_moves = legal_moves state, state.next_player
+    legal_moves = legal_moves state
     if Enum.empty?(legal_moves) do
       :pass
     else
@@ -130,7 +126,7 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def default_policy(state) do
-    legal_moves = legal_moves state, state.next_player
+    legal_moves = legal_moves state
     if Enum.empty?(legal_moves) do
       :pass
     else
@@ -155,9 +151,9 @@ defmodule WeiqiDMC.Player.MCRave do
     (1.0-beta) * q + beta * q_tilde
   end
 
-  def new_node({state, color}, parent, mc_rave_state) do
+  def new_node(state, parent, mc_rave_state) do
     board_hash  = board_hash state.board
-    legal_moves = legal_moves(state, color)
+    legal_moves = legal_moves state
 
     #TODO: extract that 0.5 to a function, it's the heuristic H(s,a), 0.5 -> Qeven
     new_q_tilde = set_base_values mc_rave_state.q_tilde, legal_moves, board_hash, 0.5
@@ -219,9 +215,9 @@ defmodule WeiqiDMC.Player.MCRave do
     end)
   end
 
-  def legal_moves(state, color) do
+  def legal_moves(state) do
     state.board
       |> State.empty_coordinates
-      |> Enum.filter(&Board.valid_move?(state, &1, color))
+      |> Enum.filter(&Board.valid_move?(state, &1))
   end
 end

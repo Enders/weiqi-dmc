@@ -1,6 +1,6 @@
 defmodule WeiqiDMC.Helpers do
 
-  defp handicap_coordinates(size, handicap) do
+  def handicap_coordinates(size, handicap) do
     case {size, handicap} do
       {19, 2} -> ["D4", "Q16"]
       {19, 3} -> ["D4", "Q16", "D16"]
@@ -52,7 +52,7 @@ defmodule WeiqiDMC.Helpers do
     end
   end
 
-  def normalize_color(color) when is_integer(color) do
+  def normalize_color(color) when is_atom(color) do
     color
   end
 end

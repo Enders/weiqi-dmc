@@ -1,24 +1,20 @@
 defmodule WeiqiDMC.Player.Random do
   alias WeiqiDMC.Board.State
+  alias WeiqiDMC.Board
 
-  def generate_move(state, color) do
-    valid_moves = generate_valid_moves state, color
-    if Enum.empty?(valid_moves) do
+  def generate_move(state) do
+    legal_moves = legal_moves state
+    if Enum.empty?(legal_moves) do
       :pass
     else
       :random.seed(:os.timestamp)
-      Enum.at valid_moves, :random.uniform(length(valid_moves)) - 1
+      Enum.at legal_moves, :random.uniform(length(legal_moves)) - 1
     end
   end
 
-  def generate_valid_moves(state, color) do
+  def legal_moves(state) do
     state.board
       |> State.empty_coordinates
-      |> Enum.filter(fn coordinate -> valid_move?(coordinate, color, state) end)
-  end
-
-  def valid_move?(coordinate, color, state) do
-    {result, _} = WeiqiDMC.Board.compute_move(state, coordinate, color)
-    result == :ok
+      |> Enum.filter(fn coordinate -> Board.valid_move?(state, coordinate) end)
   end
 end

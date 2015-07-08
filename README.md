@@ -37,7 +37,7 @@ Same as normal, just `mix test`
 
 - [ ] Implement MC + RAVE
   - [x] Copy the imperative algorithm from Sylvain Gelly's 2011 paper (MCTS and RAVE Estimation in Computer Go) with Qeven heuristic
-  - [.] Write tests to secure the implementation
+  - [ ] Write tests to secure the implementation (WIP)
   - [ ] Tune it to get a basic level of strength on 9x9, say 5-10k, with fixed time settings
   - [ ] Write one of the better heuristic proposed by Sylvain
   - [ ] Tune it to get it to an intermediate level of strength on 9x9, 2k-1d

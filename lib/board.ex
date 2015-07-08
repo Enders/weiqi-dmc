@@ -1,101 +1,34 @@
 defmodule WeiqiDMC.Board do
-
   alias WeiqiDMC.Board.State
   alias WeiqiDMC.Helpers
 
-  def start_link do
-    Agent.start_link fn -> %State{size: 19, board: State.empty_board(19)} end
-  end
-
-  #GTP API
-  #--------
-
-  #TODO: move into gtp_commands instead?
-
-  def state(board_agent) do
-    Agent.get(board_agent, &(&1))
-  end
-
-  def showboard(board_agent) do
-    WeiqiDMC.Board.State.to_string Agent.get(board_agent, &(&1))
-  end
-
-  def clear_board(board_agent) do
-    Agent.update board_agent, fn state -> %State{ board: State.empty_board(state.size),
-                                                  size:  state.size } end
-  end
-
-  def change_size(board_agent, size) do
+  def change_size(_, size) do
     cond do
       Enum.member?([9,13,19], size) ->
-        Agent.update board_agent, fn _ -> %State{ board: State.empty_board(size),
-                                                  size:  size } end
+        %State{ board: State.empty_board(size), size:  size }
       true -> :ko
     end
   end
 
-  def generate_move(board_agent, color) do
-    state = Agent.get(board_agent, &(&1))
-    case WeiqiDMC.Player.Random.generate_move(state, Helpers.normalize_color(color)) do
-      :resign -> "resign"
-      :pass ->
-        play_move(board_agent, "pass", color)
-        "pass"
-      {row, column} ->
-        coordinate = Helpers.coordinate_tuple_to_string {row, column}
-        case play_move(board_agent, coordinate, color) do
-          {:ok, _} -> coordinate
-          {:ko, _} -> "resign"
-        end
-    end
+  def force_next_player(state, color) do
+     %{ state | next_player: Helpers.normalize_color(color) }
   end
 
-  def change_komi(board_agent, komi) do
-    Agent.update board_agent, fn state -> %{state | komi: komi } end
+  def clear_board(state, size) do
+    %State{ board: State.empty_board(state.size), size:  state.size }
   end
 
-  def set_handicap(_, handicap) when handicap < 2 or handicap > 9 do
-    :ko
+  def change_komi(state, komi) do
+    %{ state | komi: komi }
   end
 
-  def set_handicap(board_agent, handicap) do
-    %WeiqiDMC.Board.State{size: size} = Agent.get(board_agent, &(&1))
-    play_moves board_agent, Helpers.handicap_coordinates(size, handicap), :black
+  def set_handicap(state, handicap) when handicap < 2 or handicap > 9 do
+    {:ko, state}
   end
 
-  def play_moves(board_agent, moves, color) do
-    state = Agent.get(board_agent, &(&1))
-    coordinates = moves |> Enum.map(&Helpers.coordinate_string_to_tuple(&1))
-    case compute_moves(state, coordinates, Helpers.normalize_color(color)) do
-      {:ok, state} -> Agent.update board_agent, fn _ -> state end
-      {:ko, _ }    -> :ko
-    end
-  end
-
-  def play_move(board_agent, "pass", color) do
-    state = Agent.get(board_agent, &(&1))
-    updated_state = %{state | moves: state.moves ++ [(color |> String.downcase |> String.first) <> " pass"]}
-    Agent.update board_agent, fn _ -> updated_state end
-    {:ok, updated_state}
-  end
-
-  def play_move(board_agent, coordinate, color) do
-    state = Agent.get(board_agent, &(&1))
-    case compute_move(state, Helpers.coordinate_string_to_tuple(coordinate), Helpers.normalize_color(color)) do
-      {:ok, state} ->
-        Agent.update board_agent, fn _ -> %{state | moves: state.moves ++ [coordinate]} end
-        {:ok, state}
-      {:ko, _ }    -> {:ko, state}
-    end
-  end
-
-  #Board API
-  #---------
-
-  def valid_move?(state, coordinate, color) do
-    #TODO: make it way faster by not computing the new board
-    {result, _} = compute_move(state, coordinate, color)
-    result == :ok
+  def set_handicap(state, handicap) do
+    handicap_coordinates = Helpers.handicap_coordinates(state.size, handicap) |> Enum.map(&Helpers.coordinate_string_to_tuple(&1))
+    compute_moves state, handicap_coordinates, :black
   end
 
   def compute_moves(state, [], _) do
@@ -103,26 +36,32 @@ defmodule WeiqiDMC.Board do
   end
 
   def compute_moves(state, [coordinate|rest], color) do
-    case compute_move(state, coordinate, color) do
-      {:ok, state} -> compute_moves(state, rest, color)
+    case compute_move((state |> force_next_player(color)), coordinate) do
+      {:ok, state} -> compute_moves state, rest, color
       {:ko, _ }    -> {:ko, state }
     end
   end
 
-  def compute_move(state, :pass, color) do
-    {:ok,  %{state | next_player: Helpers.opposite_color(color) } }
+  def compute_move(state, coordinate, color) do
+    compute_move (state |> force_next_player(color)), coordinate
   end
 
-  def compute_move(state, coordinate, color) do
+  def compute_move(state, :pass) do
+    {:ok,  %{state | board: remove_ko(state.board, state.coordinate_ko),
+                     coordinate_ko: nil,
+                     next_player: Helpers.opposite_color(state.next_player) } }
+  end
+
+  def compute_move(state, coordinate) do
     if State.board_value(state.board, coordinate) != :empty do
       {:ko, state}
     else
-      compute_valid_move state, coordinate, color
+      compute_valid_move state, coordinate
     end
   end
 
-  def compute_valid_move(state, coordinate, color) do
-
+  def compute_valid_move(state, coordinate) do
+    color        = state.next_player
     surroundings = surroundings coordinate, state.size
 
     empty        = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state.board, surrounding) == :empty end)
@@ -150,13 +89,20 @@ defmodule WeiqiDMC.Board do
         {board, groups}           = process_move(state.board, state.groups, coordinate, color, empty)
         {board, groups, captured} = process_capture(board, groups, capturing, 0)
 
-        #TODO: extract so it can also be called when passing
-        if state.coordinate_ko do
-          board = State.update_board board, state.coordinate_ko, :empty
-        end
+        board = remove_ko board, state.coordinate_ko
+
         if captured == 1 do
-          coordinate_ko = capturing |> List.first |> elem(1) |> List.first
-          board = State.update_board board, coordinate_ko, :ko
+          possible_ko_coordinate = capturing |> List.first |> elem(1) |> List.first
+          ko_surroundings = surroundings possible_ko_coordinate, state.size
+          groups_around_ko_in_atari = groups |> Enum.filter(fn({_, coordinates, liberties}) ->
+            liberties == [possible_ko_coordinate] and (ko_surroundings |> Enum.any?(fn(surrounding) ->
+              Enum.member?(coordinates, surrounding)
+            end))
+          end)
+          if length(groups_around_ko_in_atari) == 1 do
+            coordinate_ko = possible_ko_coordinate
+            board = State.update_board board, coordinate_ko, :ko
+          end
         else
           coordinate_ko = nil
         end
@@ -168,6 +114,11 @@ defmodule WeiqiDMC.Board do
                          captured_white: state.captured_white + (if color == :black do captured else 0 end),
                          captured_black: state.captured_black + (if color == :white do captured else 0 end) } }
     end
+  end
+
+  def remove_ko(board, nil) do board end
+  def remove_ko(board, coordinate_ko) do
+    State.update_board board, coordinate_ko, :empty
   end
 
   def group_containing(coordinate, groups) do
@@ -241,6 +192,12 @@ defmodule WeiqiDMC.Board do
     end)
 
     process_capture_group State.update_board(board, capture, :empty), groups, rest
+  end
+
+  def valid_move?(state, coordinate) do
+    #TODO: make it way faster by not computing the new board
+    {result, _} = compute_move(state, coordinate)
+    result == :ok
   end
 
   def contiguous?({row_a, column_a}, coordinate_b) do
