@@ -1,5 +1,4 @@
-defmodule WeiqiDMC.Player do
-
+defmodule WeiqiDMC.Player.Random do
   alias WeiqiDMC.Board.State
 
   def generate_move(state, color) do

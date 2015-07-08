@@ -1,10 +1,10 @@
-defmodule WeiqiDMC.PlayerTest do
+defmodule WeiqiDMC.Player.RandomTest do
   use ExUnit.Case
 
   alias WeiqiDMC.Board
-  alias WeiqiDMC.Player
+  alias WeiqiDMC.Player.Random, as: Player
 
-  doctest WeiqiDMC.Player
+  doctest WeiqiDMC.Player.Random
 
   setup do
     {:ok, board_agent} = Board.start_link

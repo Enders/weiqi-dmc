@@ -36,7 +36,7 @@ defmodule WeiqiDMC.Board do
 
   def generate_move(board_agent, color) do
     state = Agent.get(board_agent, &(&1))
-    case WeiqiDMC.Player.generate_move(state, Helpers.normalize_color(color)) do
+    case WeiqiDMC.Player.Random.generate_move(state, Helpers.normalize_color(color)) do
       :resign -> "resign"
       :pass ->
         play_move(board_agent, "pass", color)
@@ -92,6 +92,12 @@ defmodule WeiqiDMC.Board do
   #Board API
   #---------
 
+  def valid_move?(state, coordinate, color) do
+    #TODO: make it way faster by not computing the new board
+    {result, _} = compute_move(state, coordinate, color)
+    result == :ok
+  end
+
   def compute_moves(state, [], _) do
     {:ok, state}
   end
@@ -101,6 +107,10 @@ defmodule WeiqiDMC.Board do
       {:ok, state} -> compute_moves(state, rest, color)
       {:ko, _ }    -> {:ko, state }
     end
+  end
+
+  def compute_move(state, :pass, color) do
+    {:ok,  %{state | next_player: Helpers.opposite_color(color) } }
   end
 
   def compute_move(state, coordinate, color) do
@@ -153,6 +163,7 @@ defmodule WeiqiDMC.Board do
 
         {:ok,  %{state | board: board,
                          groups: groups,
+                         next_player: Helpers.opposite_color(color),
                          coordinate_ko: coordinate_ko,
                          captured_white: state.captured_white + (if color == :black do captured else 0 end),
                          captured_black: state.captured_black + (if color == :white do captured else 0 end) } }
@@ -230,6 +241,13 @@ defmodule WeiqiDMC.Board do
     end)
 
     process_capture_group State.update_board(board, capture, :empty), groups, rest
+  end
+
+  def contiguous?({row_a, column_a}, coordinate_b) do
+    [{-1, 0}, {1, 0}, {0, 1}, {0, -1}]
+      |> Enum.any?(fn({delta_row, delta_column}) ->
+        {row_a+delta_row, column_a+delta_column} == coordinate_b
+      end)
   end
 
   defp surroundings(coordinate, size) do

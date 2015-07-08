@@ -3,7 +3,7 @@ defmodule WeiqiDMC.StateTest do
 
   alias WeiqiDMC.Board.State
 
-  doctest WeiqiDMC.Player
+  doctest WeiqiDMC.Board.State
 
   test "#empty_board -> build a board HashDict" do
     board = State.empty_board(9)

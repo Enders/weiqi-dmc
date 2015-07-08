@@ -9,6 +9,7 @@ defmodule WeiqiDMC.Board.State do
             captured_white: 0,
             moves: [],
             groups: [],
+            next_player: :black,
             coordinate_ko: nil,
             board: nil
 

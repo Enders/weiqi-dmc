@@ -2,7 +2,7 @@
 
 WeiqiDMC stands for *Weiqi Distributed Monte Carlo*, just a fancy temporary name because naming it *GoSomething* would have made matters confusing, wouldn't it?
 
-As it stands, the project is just a pet-project made to test out the hypothesis that performance losses in Elixir (compared to C/C++, especially when it comes to memory management) can be offseted by the ease of writing distributed applications. Monte Carlo estimation seems like a good candidate as simulations are mostly independent, and RAVE can be seen as a main controller, spawning the simulations. Looks like a good use case for Elixir!
+As it stands, the project is just a pet-project made to test out the hypothesis that performance losses in Elixir (compared to C/C++, especially when it comes to memory management) can be offseted by the ease of writing distributed applications.
 
 ## Main features
 
@@ -35,13 +35,19 @@ Same as normal, just `mix test`
 
 ## Roadmap
 
- 1. Add time management + pondering (can be done  with the random player, although it's kind of pointless, it'd make things ready for the real meat of this project)
- 2. Implement MC + RAVE as a separate player and use Elixir goodies to make it pluggable
- 3. Devise a protocol for testing vs other engines
- 4. Tune the engine
- 5. Glory
- 6. Implement Scoring, Position Estimation, etc.
- 7. Resign from the project and start a fork to *make things right*
+- [ ] Implement MC + RAVE
+  - [x] Copy the imperative algorithm from Sylvain Gelly's 2011 paper (MCTS and RAVE Estimation in Computer Go) with Qeven heuristic
+  - [.] Write tests to secure the implementation
+  - [ ] Tune it to get a basic level of strength on 9x9, say 5-10k, with fixed time settings
+  - [ ] Write one of the better heuristic proposed by Sylvain
+  - [ ] Tune it to get it to an intermediate level of strength on 9x9, 2k-1d
+- [ ] Make it distributed by spawing Erlang processes to perform multiple simulation in parallel, then regroup to calculate the new Q, Qtilde, N and Ntilde
+- [ ] Add time management
+- [ ] Add pondering
+- [ ] Devise a protocol for testing vs other engines
+- [ ] Tune the engine
+- [ ] Glory
+- [ ] Resign from the project and start a fork to *make things right*
 
 ## Contributing
 
