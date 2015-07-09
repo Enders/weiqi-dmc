@@ -31,6 +31,8 @@ defmodule WeiqiDMC.Helpers do
     end
   end
 
+  def coordinate_string_to_tuple("pass") do :pass end
+
   def coordinate_string_to_tuple(coordinate) when is_bitstring(coordinate) do
     normalized_column = coordinate |> String.upcase |> String.to_char_list |> List.first
     row               = String.to_integer String.slice(coordinate, 1,String.length(coordinate)-1)

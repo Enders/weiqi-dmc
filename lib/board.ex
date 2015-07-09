@@ -2,6 +2,33 @@ defmodule WeiqiDMC.Board do
   alias WeiqiDMC.Board.State
   alias WeiqiDMC.Helpers
 
+  def from_full_board(full_board, size) do
+    prep_board_data = full_board
+      |> Enum.chunk(size)
+      |> Enum.reverse
+      |> Enum.with_index
+      |> Enum.map(fn({row_data, row}) -> { Enum.with_index(row_data), row} end)
+
+    from_full_board_row %State{ board: State.empty_board(size), size:  size }, prep_board_data
+  end
+
+  def from_full_board_row(state, []) do state end
+  def from_full_board_row(state, [{row_data, row}|remaining]) do
+    from_full_board_row from_full_board_column(state, row, row_data), remaining
+  end
+
+  def from_full_board_column(state, _, []) do state end
+  def from_full_board_column(state, row, [{value, column}|remaining]) do
+    cond do
+       Enum.member?([:black, :b, "Black", "black", "B", "b"], value) ->
+        {:ok, state} = compute_move(force_next_player(state, :black), {row+1, column+1})
+       Enum.member?([:white, :w, "White", "white", "W", "w"], value) ->
+        {:ok, state} = compute_move(force_next_player(state, :white), {row+1, column+1})
+       true -> #
+     end
+      from_full_board_column state, row, remaining
+  end
+
   def change_size(_, size) do
     cond do
       Enum.member?([9,13,19], size) ->
@@ -10,11 +37,15 @@ defmodule WeiqiDMC.Board do
     end
   end
 
+  def force_opposite_player(state) do
+    %{ state | next_player: Helpers.opposite_color(state.next_player) }
+  end
+
   def force_next_player(state, color) do
      %{ state | next_player: Helpers.normalize_color(color) }
   end
 
-  def clear_board(state, size) do
+  def clear_board(state) do
     %State{ board: State.empty_board(state.size), size:  state.size }
   end
 
@@ -95,7 +126,7 @@ defmodule WeiqiDMC.Board do
           possible_ko_coordinate = capturing |> List.first |> elem(1) |> List.first
           ko_surroundings = surroundings possible_ko_coordinate, state.size
           groups_around_ko_in_atari = groups |> Enum.filter(fn({_, coordinates, liberties}) ->
-            liberties == [possible_ko_coordinate] and (ko_surroundings |> Enum.any?(fn(surrounding) ->
+            length(coordinates) == 1 and liberties == [possible_ko_coordinate] and (ko_surroundings |> Enum.any?(fn(surrounding) ->
               Enum.member?(coordinates, surrounding)
             end))
           end)
@@ -200,12 +231,101 @@ defmodule WeiqiDMC.Board do
     result == :ok
   end
 
-  def contiguous?({row_a, column_a}, coordinate_b) do
-    [{-1, 0}, {1, 0}, {0, 1}, {0, -1}]
-      |> Enum.any?(fn({delta_row, delta_column}) ->
-        {row_a+delta_row, column_a+delta_column} == coordinate_b
-      end)
+
+  def enclosed_regions(state, color, seed_coordinates) do
+    opposite_color = Helpers.opposite_color color
+    coordinates = seed_coordinates
+      |> Enum.map(fn coordinate -> surroundings(coordinate, state.size) end)
+      |> List.flatten
+      |> Enum.filter(fn coordinate ->
+        coordinate != :invalid and
+        Enum.member?([:ko, :empty, opposite_color], State.board_value(state.board, coordinate))
+      end)|> Enum.uniq
+
+    enclosed_regions_rec state, color, coordinates, [], []
   end
+
+  def enclosed_regions_rec(_, _, [], _, regions) do regions end
+  def enclosed_regions_rec(state, color, [current|rest], visited, regions) do
+
+    surroundings = current |> surroundings(state.size)
+                           |> Enum.filter(fn (coordinate) -> coordinate != :invalid end)
+                           |> Enum.map(fn (coordinate) -> {State.board_value(state.board, coordinate), coordinate} end)
+
+    possible_surroundings = surroundings |> Enum.filter(fn {surrounding, _} -> surrounding != color end)
+                                         |> Enum.map(fn {_, coordinate} -> coordinate end)
+
+    {matching, non_matching} = regions |> Enum.partition(fn {coordinates, _} ->
+      possible_surroundings |> Enum.any?(fn coordinate ->
+        Enum.member?(coordinates, coordinate)
+      end)
+    end)
+
+    liberty = Enum.member?([:empty, :ko], State.board_value(state.board, current))
+
+    flat_match = matching |> List.flatten
+    matching_coordinates = flat_match |> Enum.map(fn {coordinates, _} -> coordinates end) |> List.flatten |> Enum.uniq
+    matching_liberties   = flat_match |> Enum.map(fn {_, liberties}   -> liberties   end) |> List.flatten |> Enum.uniq
+
+    if liberty do
+      regions = [{[current|matching_coordinates], [current|matching_liberties]}|non_matching]
+    else
+      regions = [{[current|matching_coordinates], matching_liberties}|non_matching]
+    end
+
+    enclosed_regions_rec state, color, (Enum.uniq(possible_surroundings++rest)--visited), [current|visited], regions
+  end
+
+  #The implementation below may be useful later but not sure for what yet :)
+  #It groups all empty coordinates into regions through flood fill, and mark them as either
+  #dame, black or white. It's not the same 'enclosed regions' in Benson's sense.
+
+  #Also, it took a while to write this and get it to work so I don't want to delete it just yet.
+
+  # def enclosed_regions(state) do
+  #   enclosed_regions_rec state, State.empty_coordinates(state.board), []
+  # end
+
+  # def enclosed_regions_rec(_, [], regions) do regions end
+  # def enclosed_regions_rec(state, [current|remaining], regions) do
+  #   surroundings = current |> surroundings(state.size)
+  #                          |> Enum.filter(fn (coordinate) -> coordinate != :invalid end)
+  #                          |> Enum.map(fn (coordinate) -> {State.board_value(state.board, coordinate), coordinate} end)
+
+  #   colors = surroundings  |> Enum.map(fn (surrounding) -> elem(surrounding, 0) end)
+  #                          |> Enum.uniq
+
+  #   {matching, non_matching} = regions |> Enum.partition(fn {_, coordinates} ->
+  #     surroundings |> Enum.any?(fn {_, coordinate} ->
+  #       Enum.member?(coordinates, coordinate)
+  #     end)
+  #   end)
+
+  #   if length(matching) > 0 do
+  #     matched_coordinates = matching |> Enum.map(fn({_, coordinates}) -> coordinates end)
+  #                                    |> List.flatten
+  #     matched_colors      = matching |> Enum.map(fn({color, _}) -> color end)
+  #                                    |> List.flatten
+  #                                    |> Enum.uniq
+
+  #     cond do
+  #       Enum.member?(matched_colors, :dame) or (Enum.member?(colors++matched_colors, :black) and Enum.member?(colors++matched_colors, :white)) ->
+  #         enclosed_regions_rec state, remaining, [{:dame, [current|matched_coordinates]}|non_matching]
+  #       true ->
+  #         color = (matched_colors++colors) |> Enum.find(fn (color) -> color == :black or color == :white end)
+  #         if !color do color = :empty end
+  #         enclosed_regions_rec state, remaining, [{color, [current|matched_coordinates]}|non_matching]
+  #     end
+  #   else
+  #     if (Enum.member?(colors, :black) and Enum.member?(colors, :white)) do
+  #       enclosed_regions_rec state, remaining, [{:dame, [current]}|regions]
+  #     else
+  #       color = colors |> Enum.find(fn (color) -> color == :black or color == :white end)
+  #       if !color do color = :empty end
+  #       enclosed_regions_rec state, remaining, [{color, [current]}|regions]
+  #     end
+  #   end
+  # end
 
   defp surroundings(coordinate, size) do
     [{-1, 0}, {1, 0}, {0, 1}, {0, -1}]

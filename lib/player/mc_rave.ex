@@ -2,7 +2,7 @@ defmodule WeiqiDMC.Player.MCRave do
   alias WeiqiDMC.Board
   alias WeiqiDMC.Board.State
 
-  @constant_bias        0
+  @constant_bias        0.1
   @heuristic_confidence 10
 
   def board_hash(board) do
@@ -20,9 +20,7 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   #Useful for testing
-
   def state_hash(state) when is_atom(state) do state end
-
   def state_hash(state) do
     board_hash state.board
   end
@@ -31,21 +29,21 @@ defmodule WeiqiDMC.Player.MCRave do
     {mega, secs, micro} = :os.timestamp
     mc_rave_state = mc_rave state,
                             {mega, secs, micro+think_time_ms*1000}, think_time_ms*1000,
-                            %WeiqiDMC.Player.MCRave.State{tree: {state_hash(state), []}}
+                            %WeiqiDMC.Player.MCRave.State{}
     select_move state, mc_rave_state
   end
 
-  def mc_rave(state, target_time, remaining_time, mc_rave_state) when remaining_time < 0 do
+  def mc_rave(_, _, remaining_time, mc_rave_state) when remaining_time < 0 do
     mc_rave_state
   end
 
-  def mc_rave(state, target_time, remaining_time, mc_rave_state) do
+  def mc_rave(state, target_time, _, mc_rave_state) do
     mc_rave state, target_time, :timer.now_diff(target_time, :os.timestamp), simulate(state, mc_rave_state)
   end
 
   def simulate(state, mc_rave_state) do
-    {known_states, known_actions, mc_rave_state} = sim_tree    [state], [], mc_rave_state
-    {missing_states, missing_actions, outcome}   = sim_default [(known_states|>List.first)], []
+    {known_states, known_actions, mc_rave_state} = sim_tree [state], [], mc_rave_state
+    {missing_actions, outcome} = sim_default List.last(known_states), []
     backup mc_rave_state, known_states, known_actions, missing_actions, outcome
   end
 
@@ -54,7 +52,8 @@ defmodule WeiqiDMC.Player.MCRave do
     state_hash = state_hash(known_state)
     key = {state_hash, known_action}
     updated_n = Dict.get(mc_rave_state.n, key, 0) + 1
-    updated_q = (outcome - Dict.get(mc_rave_state.q, key, 0))/updated_n
+    updated_q = Dict.get(mc_rave_state.q, key, 0) + (outcome - Dict.get(mc_rave_state.q, key, 0))/updated_n
+
     mc_rave_state = %{mc_rave_state | n: Dict.put(mc_rave_state.n, key, updated_n),
                                       q: Dict.put(mc_rave_state.q, key, updated_q) }
 
@@ -75,7 +74,7 @@ defmodule WeiqiDMC.Player.MCRave do
       if !Enum.member?(action_subset, action_u) do
         key = {state_hash, action_u}
         updated_n_tilde = Dict.get(mc_rave_state.n_tilde, key, 0) + 1
-        updated_q_tilde = (outcome - Dict.get(mc_rave_state.q_tilde, key, 0))/updated_n_tilde
+        updated_q_tilde = Dict.get(mc_rave_state.q_tilde, key, 0) + (outcome - Dict.get(mc_rave_state.q_tilde, key, 0))/updated_n_tilde
         mc_rave_state = %{mc_rave_state | n_tilde: Dict.put(mc_rave_state.n_tilde, key, updated_n_tilde),
                                           q_tilde: Dict.put(mc_rave_state.q_tilde, key, updated_q_tilde) }
 
@@ -86,13 +85,13 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def sim_tree([state|states], actions, mc_rave_state) do
     if game_over?(state) do
-      {states, actions, mc_rave_state}
+      {Enum.reverse(states), Enum.reverse(actions), mc_rave_state}
     else
       state_hash = state_hash state
       if !tree_member?(mc_rave_state.tree, state_hash) do
         parent_hash = states |> List.first |> state_hash
         new_action = default_policy(state)
-        {[state|states], [new_action|actions], %{mc_rave_state | tree: tree_insert(mc_rave_state.tree, parent_hash, state_hash)}}
+        {Enum.reverse([state|states]), Enum.reverse([new_action|actions]), new_node(state, parent_hash, mc_rave_state)}
       else
         new_action = select_move(state, mc_rave_state)
         {:ok, new_state} = Board.compute_move(state, new_action, state.next_player)
@@ -101,18 +100,20 @@ defmodule WeiqiDMC.Player.MCRave do
     end
   end
 
-  def sim_default([state|states], moves) do
-    if game_over?(state) do
-      {[state|states], moves, outcome?(state)}
+  def sim_default(from_state, moves) do
+    if game_over?(from_state) do
+      {Enum.reverse(moves), outcome?(from_state)}
     else
-      new_action = default_policy(state)
-      {:ok, new_state} = Board.compute_move(state, new_action, state.next_player)
-      sim_default [new_state|[state|states]], [new_action|moves]
+      new_action = default_policy(from_state)
+      {:ok, new_state} = Board.compute_move(from_state, new_action, from_state.next_player)
+      sim_default new_state, [new_action|moves]
     end
   end
 
   def select_move(state, mc_rave_state) do
     legal_moves = legal_moves state
+    state_hash = state_hash state
+
     if Enum.empty?(legal_moves) do
       :pass
     else
@@ -136,9 +137,9 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def eval(state_hash, action, mc_rave_state) do
+    n       = Dict.get(mc_rave_state.n, {state_hash, action}, 0)
+    q       = Dict.get(mc_rave_state.q, {state_hash, action}, 0)
     n_tilde = Dict.get(mc_rave_state.n_tilde, {state_hash, action}, 0)
-    n = Dict.get(mc_rave_state.n, {state_hash, action}, 0)
-    q = Dict.get(mc_rave_state.q, {state_hash, action}, 0)
     q_tilde = Dict.get(mc_rave_state.q_tilde, {state_hash, action}, 0)
 
     beta_denom = (n + n_tilde + 4*n_tilde*n*@constant_bias*@constant_bias)
@@ -151,18 +152,18 @@ defmodule WeiqiDMC.Player.MCRave do
     (1.0-beta) * q + beta * q_tilde
   end
 
-  def new_node(state, parent, mc_rave_state) do
-    board_hash  = board_hash state.board
+  def new_node(state, parent_hash, mc_rave_state) do
+    state_hash  = state_hash state
     legal_moves = legal_moves state
 
     #TODO: extract that 0.5 to a function, it's the heuristic H(s,a), 0.5 -> Qeven
-    new_q_tilde = set_base_values mc_rave_state.q_tilde, legal_moves, board_hash, 0.5
-    new_q       = set_base_values mc_rave_state.q,       legal_moves, board_hash, 0.5
-    new_n_tilde = set_base_values mc_rave_state.n_tilde, legal_moves, board_hash, @heuristic_confidence
-    new_n       = set_base_values mc_rave_state.n,       legal_moves, board_hash, @heuristic_confidence
+    new_q_tilde = set_base_values mc_rave_state.q_tilde, legal_moves, state_hash, 0.5
+    new_q       = set_base_values mc_rave_state.q,       legal_moves, state_hash, 0.5
+    new_n_tilde = set_base_values mc_rave_state.n_tilde, legal_moves, state_hash, @heuristic_confidence
+    new_n       = set_base_values mc_rave_state.n,       legal_moves, state_hash, @heuristic_confidence
 
     %{ mc_rave_state | q_tilde: new_q_tilde, q: new_q, n: new_n, n_tilde: new_n_tilde,
-                       tree: tree_insert(mc_rave_state.tree, parent, {board_hash, state.board}) }
+                       tree: tree_insert(mc_rave_state.tree, parent_hash, state_hash) }
   end
 
   def set_base_values(state_component, [], _, _) do state_component end
@@ -173,6 +174,7 @@ defmodule WeiqiDMC.Player.MCRave do
   #Tree processing
   #---------------
 
+  def tree_insert(nil, _, node) do {node, []} end
   def tree_insert({root, children}, parent, node) do
     if root == parent do
       {root, [{node, []}|children]}
@@ -184,6 +186,7 @@ defmodule WeiqiDMC.Player.MCRave do
     end
   end
 
+  def tree_member?(nil, _) do false end
   def tree_member?({state_hash, []}, needle) do state_hash == needle end
   def tree_member?({state_hash, children}, needle) do
     state_hash == needle or Enum.any?(children, fn (child) -> tree_member?(child, needle) end)
@@ -197,7 +200,7 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def black_wins?(state) do
-    count_stones(state, :black) > count_stones(state, :white) + state.komi
+    (count_stones(state, :black) + state.captured_white) > (count_stones(state, :white) + state.komi + state.captured_black)
   end
 
   def count_stones(state, color) do
@@ -207,12 +210,24 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def game_over?(state) do
-    #The game finishes when all the groups are alive
-    #Here, alive is simplified to -> 2 non-contiguous liberties ("eyes")
-    #TODO: prove it!
-    state.groups |> Enum.all?(fn({_, _, liberties}) ->
-      length(liberties) == 2 and !Board.contiguous?(Enum.at(liberties, 0), Enum.at(liberties, 1))
-    end)
+    benson_everything_alive? state, state.groups
+  end
+
+  #http://webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
+  #http://senseis.xmp.net/?BensonsAlgorithm
+  def benson_everything_alive?(_, []) do true end
+  def benson_everything_alive?(state, [group|groups]) do
+    length(benson_vital_regions(state, group)) >= 2 and
+    benson_everything_alive?(state, groups)
+  end
+
+  def benson_vital_regions(state, {color, coordinates, liberties}) do
+    Board.enclosed_regions(state, color, coordinates)
+      |> Enum.filter(fn {_, empty_coordinates} ->
+        Enum.all?(empty_coordinates, fn (empty_coordinate) ->
+          Enum.member? liberties, empty_coordinate
+        end)
+      end)
   end
 
   def legal_moves(state) do

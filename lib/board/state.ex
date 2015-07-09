@@ -87,6 +87,7 @@ defmodule WeiqiDMC.Board.State do
                         |> Enum.join("\n")
 
     """
+      Next Player: #{state.next_player}
       Move: #{length(state.moves)}
       Captured White: #{state.captured_white}
       Captured Black: #{state.captured_black}

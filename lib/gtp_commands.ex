@@ -1,5 +1,6 @@
 defmodule WeiqiDMC.GTPCommands do
 
+  alias WeiqiDMC.Helpers
   alias WeiqiDMC.Board
   alias WeiqiDMC.Board.State
 
