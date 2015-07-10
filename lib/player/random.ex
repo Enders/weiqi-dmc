@@ -13,7 +13,7 @@ defmodule WeiqiDMC.Player.Random do
   end
 
   def legal_moves(state) do
-    state.board
+    state
       |> State.empty_coordinates
       |> Enum.filter(fn coordinate -> Board.valid_move?(state, coordinate) end)
   end

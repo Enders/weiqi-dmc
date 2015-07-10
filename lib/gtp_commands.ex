@@ -9,7 +9,7 @@ defmodule WeiqiDMC.GTPCommands do
                  :play, :genmove, :showboard, :set_game]
 
   def start_link do
-    Agent.start_link fn -> %State{size: 19, board: State.empty_board(19)} end
+    Agent.start_link fn -> State.empty_board(19) end
   end
 
   def state(state_agent) do

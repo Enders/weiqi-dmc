@@ -9,7 +9,7 @@ defmodule WeiqiDMC.Player.RandomTest do
   doctest WeiqiDMC.Player.Random
 
   setup do
-    {:ok, state: %State{ board: State.empty_board(9), size:  9 } }
+    {:ok, state: State.empty_board(9) }
   end
 
   test "pass if no valid move left", %{state: state} do

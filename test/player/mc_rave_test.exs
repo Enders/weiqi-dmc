@@ -10,7 +10,7 @@ defmodule WeiqiDMC.Player.McRaveTest do
   doctest WeiqiDMC.Player.MCRave
 
   setup do
-    {:ok, state: %State{ board: State.empty_board(9), size:  9 } }
+    {:ok, state: State.empty_board(9) }
   end
 
   test "#default policy", %{state: state} do
@@ -211,6 +211,10 @@ defmodule WeiqiDMC.Player.McRaveTest do
     assert Dict.fetch!(mc_rave_state.q, {:state_0, :action_0}) == (1-0)/1 + (0-1)/2
     assert Dict.fetch!(mc_rave_state.n, {:state_1, :action_1}) == 2
     assert Dict.fetch!(mc_rave_state.q, {:state_1, :action_1}) == (1-0)/1 + (0-1)/2
+  end
+
+  test "will generate a move on an empty board", %{state: state} do
+    assert Player.generate_move(Board.force_next_player(state, :black), 100) != :pass
   end
 
   test "will pick the only available move", %{state: state} do

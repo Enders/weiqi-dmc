@@ -6,36 +6,34 @@ defmodule WeiqiDMC.StateTest do
   doctest WeiqiDMC.Board.State
 
   test "#empty_board -> build a board HashDict" do
-    board = State.empty_board(9)
-    assert Dict.size(board) == 9
-    assert Dict.size(Dict.fetch!(board, 1)) == 9
-    assert Dict.fetch!(Dict.fetch!(board, 9), 9) == :empty
+    state = State.empty_board(9)
+    assert state.size == 9
+    assert State.board_value(state, {9,9}) == :empty
   end
 
   test "#fill_board -> build a board HashDict and fill it with a specific value" do
-    board = State.fill_board(9, :test)
-    assert Dict.size(board) == 9
-    assert Dict.size(Dict.fetch!(board, 1)) == 9
-    assert Dict.fetch!(Dict.fetch!(board, 9), 9) == :test
+    state = State.fill_board(9, :ko)
+    assert state.size == 9
+    assert State.board_value(state, {9,9}) == :ko
   end
 
   test "#board_value/update_board -> read/update from board" do
-    board = State.empty_board(9) |> State.update_board({2,2}, :test)
-    assert State.board_value(board, {2,2}) == :test
+    state = State.empty_board(9) |> State.update_board({2,2}, :black)
+    assert State.board_value(state, {2,2}) == :black
   end
 
   test "#to_list" do
-    board = State.empty_board(9) |> State.update_board({2,2}, :test)
-    list = State.to_list(board)
+    state = State.empty_board(9) |> State.update_board({2,2}, :black)
+    list  = State.to_list(state)
     assert length(list) == 81
     {_, _, value} = Enum.at list, Enum.find_index(list, fn({row, column, _}) ->
       row == 2 and column == 2 end)
-    assert value == :test
+    assert value == :black
   end
 
   test "#empty_coordinates" do
-    board = State.empty_board(9) |> State.update_board({2,2}, :test)
-    list = State.empty_coordinates(board)
+    state = State.empty_board(9) |> State.update_board({2,2}, :black)
+    list = State.empty_coordinates(state)
     assert length(list) == 80
   end
 end

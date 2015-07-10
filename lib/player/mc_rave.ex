@@ -22,7 +22,7 @@ defmodule WeiqiDMC.Player.MCRave do
   #Useful for testing
   def state_hash(state) when is_atom(state) do state end
   def state_hash(state) do
-    board_hash state.board
+    state.board
   end
 
   def generate_move(state, think_time_ms) do
@@ -204,13 +204,13 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def count_stones(state, color) do
-    State.to_list(state.board)
+    State.to_list(state)
       |> Enum.filter(fn({_,_,value}) -> value == color end)
       |> Enum.count
   end
 
   def game_over?(state) do
-    benson_everything_alive? state, state.groups
+    length(state.groups) > 0 and benson_everything_alive? state, state.groups
   end
 
   #http://webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
@@ -231,7 +231,7 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def legal_moves(state) do
-    state.board
+    state
       |> State.empty_coordinates
       |> Enum.filter(&Board.valid_move?(state, &1))
   end

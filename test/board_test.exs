@@ -8,17 +8,17 @@ defmodule WeiqiDMC.BoardTest do
   doctest WeiqiDMC.Board
 
   setup do
-    {:ok, state: %State{ board: State.empty_board(9), size:  9 } }
+    {:ok, state: State.empty_board(9) }
   end
 
   test "allow to play on an empty board", %{state: state} do
     {:ok, state} = Board.compute_move state, prep_coor("A1"), "Black"
-    assert State.board_value(state.board, "A1") == :black
+    assert State.board_value(state, "A1") == :black
   end
 
   test "it allows to play next to a stone as long as there are liberties", %{state: state} do
     {:ok, state} = Board.compute_move state, prep_coor("A2"), "White"
-    assert State.board_value(state.board, "A2") == :white
+    assert State.board_value(state, "A2") == :white
   end
 
   test "it doesn't allow suicide", %{state: state} do
@@ -30,7 +30,7 @@ defmodule WeiqiDMC.BoardTest do
   test "but it allows damezumari", %{state: state} do
     {:ok, state} = Board.compute_moves state, prep_coor(["A8", "B8", "B9"]), "Black"
     {_, state}   = Board.compute_move state, prep_coor("A9"), "Black"
-    assert State.board_value(state.board, "A9") == :black
+    assert State.board_value(state, "A9") == :black
   end
 
   test "but it allows capture", %{state: state} do
@@ -46,12 +46,12 @@ defmodule WeiqiDMC.BoardTest do
     {:ok, state} = Board.compute_moves state, prep_coor(["B8", "C9"]), "White"
     {_, state}   = Board.compute_move  state, prep_coor("A9"), "White"
     assert state.captured_black == 1
-    assert State.board_value(state.board, "B9") == :ko
+    assert State.board_value(state, "B9") == :ko
     {result, _} = Board.compute_move state, prep_coor("B9"), "Black"
     assert result == :ko
     {result, state} = Board.compute_move state, prep_coor("A7"), "Black"
     assert result == :ok
-    assert State.board_value(state.board, "B9") == :empty
+    assert State.board_value(state, "B9") == :empty
   end
 
   test "it really handles ko rules (bugcase)", %{state: state} do
@@ -67,7 +67,7 @@ defmodule WeiqiDMC.BoardTest do
     state = play_moves state, ["A9"], "White"
     state = play_moves state, ["B9"], "Black"
 
-    assert State.board_value(state.board, "A9") == :empty
+    assert State.board_value(state, "A9") == :empty
   end
 
   test "calculates regions" do
@@ -88,15 +88,6 @@ defmodule WeiqiDMC.BoardTest do
     enclosed_regions = Board.enclosed_regions state, :black, coordinates
 
     assert length(enclosed_regions) == 2
-
-    # regions = Board.enclosed_regions(state, :black, [{3,1}, {3,2}, {3,3}])
-    # black_regions = Enum.filter(regions, fn {color, _}-> color == :black end)
-    # white_regions = Enum.filter(regions, fn {color, _}-> color == :white end)
-    # assert length(regions) == 6
-    # assert length(black_regions) == 3
-    # assert length(white_regions) == 2
-    # assert Enum.sum(Enum.map(black_regions, fn {_, coordinates} -> length(coordinates) end)) == 14
-    # assert Enum.sum(Enum.map(white_regions, fn {_, coordinates} -> length(coordinates) end)) == 27
   end
 
   #This is a test for the other enclosed_region implementation

@@ -9,7 +9,7 @@ defmodule WeiqiDMC.Board do
       |> Enum.with_index
       |> Enum.map(fn({row_data, row}) -> { Enum.with_index(row_data), row} end)
 
-    from_full_board_row %State{ board: State.empty_board(size), size:  size }, prep_board_data
+    from_full_board_row State.empty_board(size), prep_board_data
   end
 
   def from_full_board_row(state, []) do state end
@@ -31,8 +31,7 @@ defmodule WeiqiDMC.Board do
 
   def change_size(_, size) do
     cond do
-      Enum.member?([9,13,19], size) ->
-        %State{ board: State.empty_board(size), size:  size }
+      Enum.member?([9,13,19], size) -> State.empty_board(size)
       true -> :ko
     end
   end
@@ -46,7 +45,7 @@ defmodule WeiqiDMC.Board do
   end
 
   def clear_board(state) do
-    %State{ board: State.empty_board(state.size), size:  state.size }
+    State.empty_board state.size
   end
 
   def change_komi(state, komi) do
@@ -78,13 +77,11 @@ defmodule WeiqiDMC.Board do
   end
 
   def compute_move(state, :pass) do
-    {:ok,  %{state | board: remove_ko(state.board, state.coordinate_ko),
-                     coordinate_ko: nil,
-                     next_player: Helpers.opposite_color(state.next_player) } }
+    {:ok,  (remove_ko(state, state.coordinate_ko) |> force_opposite_player) }
   end
 
   def compute_move(state, coordinate) do
-    if State.board_value(state.board, coordinate) != :empty do
+    if State.board_value(state, coordinate) != :empty do
       {:ko, state}
     else
       compute_valid_move state, coordinate
@@ -95,13 +92,13 @@ defmodule WeiqiDMC.Board do
     color        = state.next_player
     surroundings = surroundings coordinate, state.size
 
-    empty        = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state.board, surrounding) == :empty end)
+    empty        = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == :empty end)
 
-    other_player = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state.board, surrounding) == Helpers.opposite_color(color) end)
+    other_player = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == Helpers.opposite_color(color) end)
                                 |> Enum.map(&group_containing(&1, state.groups))
                                 |> Enum.uniq
 
-    same_player  = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state.board, surrounding) == color end)
+    same_player  = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == color end)
                                 |> Enum.map(&group_containing(&1, state.groups))
                                 |> Enum.uniq
 
@@ -117,10 +114,10 @@ defmodule WeiqiDMC.Board do
       liberties_same_player_group < 1 and length(empty) == 0 and length(capturing) == 0 ->
         {:ko, state}
       true ->
-        {board, groups}           = process_move(state.board, state.groups, coordinate, color, empty)
-        {board, groups, captured} = process_capture(board, groups, capturing, 0)
+        {state, groups}           = process_move(state, state.groups, coordinate, color, empty)
+        {state, groups, captured} = process_capture(state, groups, capturing, 0)
 
-        board = remove_ko board, state.coordinate_ko
+        state = remove_ko state, state.coordinate_ko
 
         if captured == 1 do
           possible_ko_coordinate = capturing |> List.first |> elem(1) |> List.first
@@ -132,14 +129,13 @@ defmodule WeiqiDMC.Board do
           end)
           if length(groups_around_ko_in_atari) == 1 do
             coordinate_ko = possible_ko_coordinate
-            board = State.update_board board, coordinate_ko, :ko
+            state = State.update_board state, coordinate_ko, :ko
           end
         else
           coordinate_ko = nil
         end
 
-        {:ok,  %{state | board: board,
-                         groups: groups,
+        {:ok,  %{state | groups: groups,
                          next_player: Helpers.opposite_color(color),
                          coordinate_ko: coordinate_ko,
                          captured_white: state.captured_white + (if color == :black do captured else 0 end),
@@ -147,9 +143,9 @@ defmodule WeiqiDMC.Board do
     end
   end
 
-  def remove_ko(board, nil) do board end
-  def remove_ko(board, coordinate_ko) do
-    State.update_board board, coordinate_ko, :empty
+  def remove_ko(state, nil) do state end
+  def remove_ko(state, coordinate_ko) do
+    State.update_board state, coordinate_ko, :empty
   end
 
   def group_containing(coordinate, groups) do
@@ -158,7 +154,7 @@ defmodule WeiqiDMC.Board do
     end
   end
 
-  def process_move(board, groups, coordinate, color, move_liberties) do
+  def process_move(state, groups, coordinate, color, move_liberties) do
     #Remove the move in the list of liberties for opposite color groups
     groups = groups |>
       Enum.map(fn ({group_color, coordinates, liberties}) ->
@@ -189,29 +185,29 @@ defmodule WeiqiDMC.Board do
       groups = groups ++ [{color, [coordinate], move_liberties}]
     end
 
-    { State.update_board(board, coordinate, color), groups }
+    { State.update_board(state, coordinate, color), groups }
   end
 
-  def process_capture(board, groups, [], captured) do
-    {board, groups, captured}
+  def process_capture(state, groups, [], captured) do
+    {state, groups, captured}
   end
 
-  def process_capture(board, groups, [{_, coordinates, _}|rest], captured) do
-    {board, groups} = process_capture_group(board, groups, coordinates)
-    process_capture board, groups, rest, captured + length(coordinates)
+  def process_capture(state, groups, [{_, coordinates, _}|rest], captured) do
+    {state, groups} = process_capture_group(state, groups, coordinates)
+    process_capture state, groups, rest, captured + length(coordinates)
   end
 
-  def process_capture_group(board, groups, []) do
-    {board, groups}
+  def process_capture_group(state, groups, []) do
+    {state, groups}
   end
 
-  def process_capture_group(board, groups, [capture|rest]) do
+  def process_capture_group(state, groups, [capture|rest]) do
     #Remove all the groups containing the removed stone
     groups = groups |> Enum.reject(fn ({_, coordinates, _}) ->
       Enum.member?(coordinates, capture)
     end)
 
-    surroundings = surroundings capture, State.board_size(board)
+    surroundings = surroundings capture, state.size
 
     #Add liberties to the surrounding groups
     groups = groups |> Enum.map(fn ({color, coordinates, liberties}) ->
@@ -222,7 +218,7 @@ defmodule WeiqiDMC.Board do
       end
     end)
 
-    process_capture_group State.update_board(board, capture, :empty), groups, rest
+    process_capture_group State.update_board(state, capture, :empty), groups, rest
   end
 
   def valid_move?(state, coordinate) do
@@ -231,7 +227,6 @@ defmodule WeiqiDMC.Board do
     result == :ok
   end
 
-
   def enclosed_regions(state, color, seed_coordinates) do
     opposite_color = Helpers.opposite_color color
     coordinates = seed_coordinates
@@ -239,7 +234,7 @@ defmodule WeiqiDMC.Board do
       |> List.flatten
       |> Enum.filter(fn coordinate ->
         coordinate != :invalid and
-        Enum.member?([:ko, :empty, opposite_color], State.board_value(state.board, coordinate))
+        Enum.member?([:ko, :empty, opposite_color], State.board_value(state, coordinate))
       end)|> Enum.uniq
 
     enclosed_regions_rec state, color, coordinates, [], []
@@ -250,7 +245,7 @@ defmodule WeiqiDMC.Board do
 
     surroundings = current |> surroundings(state.size)
                            |> Enum.filter(fn (coordinate) -> coordinate != :invalid end)
-                           |> Enum.map(fn (coordinate) -> {State.board_value(state.board, coordinate), coordinate} end)
+                           |> Enum.map(fn (coordinate) -> {State.board_value(state, coordinate), coordinate} end)
 
     possible_surroundings = surroundings |> Enum.filter(fn {surrounding, _} -> surrounding != color end)
                                          |> Enum.map(fn {_, coordinate} -> coordinate end)
@@ -261,7 +256,7 @@ defmodule WeiqiDMC.Board do
       end)
     end)
 
-    liberty = Enum.member?([:empty, :ko], State.board_value(state.board, current))
+    liberty = Enum.member?([:empty, :ko], State.board_value(state, current))
 
     flat_match = matching |> List.flatten
     matching_coordinates = flat_match |> Enum.map(fn {coordinates, _} -> coordinates end) |> List.flatten |> Enum.uniq
@@ -290,7 +285,7 @@ defmodule WeiqiDMC.Board do
   # def enclosed_regions_rec(state, [current|remaining], regions) do
   #   surroundings = current |> surroundings(state.size)
   #                          |> Enum.filter(fn (coordinate) -> coordinate != :invalid end)
-  #                          |> Enum.map(fn (coordinate) -> {State.board_value(state.board, coordinate), coordinate} end)
+  #                          |> Enum.map(fn (coordinate) -> {State.board_value(state, coordinate), coordinate} end)
 
   #   colors = surroundings  |> Enum.map(fn (surrounding) -> elem(surrounding, 0) end)
   #                          |> Enum.uniq

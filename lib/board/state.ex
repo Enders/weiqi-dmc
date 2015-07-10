@@ -13,61 +13,54 @@ defmodule WeiqiDMC.Board.State do
             coordinate_ko: nil,
             board: nil
 
-  def to_list(board) do
-    board
-      |> Dict.to_list
-      |> Enum.map(fn ({row, column_dict}) ->
-        column_dict
-          |> Dict.to_list
-          |> Enum.map(fn ({column, value}) ->
-            {row, column, value}
-          end)
-      end)
-      |> List.flatten
+  def to_list(state) do
+    state.board |> Tuple.to_list
+                |> Enum.slice(0, state.size*state.size)
+                |> Enum.chunk(state.size)
+                |> Enum.with_index
+                |> Enum.map(fn {row_data, row} ->
+                  row_data
+                    |> Enum.with_index
+                    |> Enum.map(fn {value, column} ->
+                      {row+1, column+1, value}
+                    end)
+                end)
+                |> List.flatten
   end
 
-  def empty_coordinates(board) do
-    board |> to_list
+  def empty_coordinates(state) do
+    state |> to_list
           |> Enum.filter(fn({_, _, value}) -> value == :empty end)
           |> Enum.map(fn({row, column, _}) -> {row, column} end)
   end
 
-  def update_board(board, coordinate, value) when is_bitstring(coordinate) do
-    update_board board, Helpers.coordinate_string_to_tuple(coordinate), value
+  def update_board(state, coordinate, value) when is_bitstring(coordinate) do
+    update_board state, Helpers.coordinate_string_to_tuple(coordinate), value
   end
 
-  def update_board(board, {row, column}, value) do
-    Dict.put board, row, Dict.put(Dict.fetch!(board, row), column, value)
+  def update_board(state, {row, column}, value) do
+    position = coordinate_to_index(state, {row, column})
+    %{ state | board: (state.board |> Tuple.delete_at(position) |> Tuple.insert_at(position, value)) }
   end
 
-  def board_value(board, coordinate) when is_bitstring(coordinate) do
-    board_value board, Helpers.coordinate_string_to_tuple(coordinate)
+  def board_value(state, coordinate) when is_bitstring(coordinate) do
+    board_value state, Helpers.coordinate_string_to_tuple(coordinate)
   end
 
-  def board_value(board, {row, column}) do
-    Dict.fetch! Dict.fetch!(board, row), column
+  def board_value(state, {row, column}) do
+    elem state.board, coordinate_to_index(state, {row, column})
   end
 
   def empty_board(size) do
-    build_row_dict HashDict.new, size, size, :empty
+    %WeiqiDMC.Board.State{board: Tuple.duplicate(:empty, size*size), size: size}
   end
 
   def fill_board(size, with) do
-    build_row_dict HashDict.new, size, size, with
+    %WeiqiDMC.Board.State{board: Tuple.duplicate(with, size*size), size: size}
   end
 
-  def build_row_dict(dict, 0, _, _) do dict end
-  def build_row_dict(dict, row, size, fill_with) do
-    build_row_dict Dict.put(dict, row, build_column_dict(HashDict.new, size, fill_with)), row - 1, size, fill_with
-  end
-
-  def build_column_dict(dict, 0, _) do dict end
-  def build_column_dict(dict, column, fill_with) do
-    build_column_dict Dict.put(dict, column, fill_with), column - 1, fill_with
-  end
-
-  def board_size(board) do
-    Dict.size board
+  defp coordinate_to_index(state, {row, column}) do
+    (row-1)*state.size+(column-1)
   end
 
   def to_string(state) do
