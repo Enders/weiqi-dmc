@@ -82,7 +82,7 @@ defmodule WeiqiDMC.BoardTest do
                                    :e, :e, :e, :e, :w, :w, :e, :w, :e,
                                    :w, :e, :e, :e, :w, :e, :e, :e, :e], 9
 
-    {color, coordinates, _} = Board.group_containing {9, 6}, state.groups
+    {color, coordinates, _} = Board.group_containing {9, 6}, :black, state.groups
 
     assert color == :black
 

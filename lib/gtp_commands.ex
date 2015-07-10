@@ -100,7 +100,7 @@ defmodule WeiqiDMC.GTPCommands do
 
   def process(["genmove", color], state_agent) do
     state = state(state_agent) |> Board.force_next_player(color)
-    case WeiqiDMC.Player.MCRave.generate_move(state, 1000) do
+    case WeiqiDMC.Player.MCRave.generate_move(state, 20000) do
       :ko     -> {:ko, "illegal state"}
       :resign -> {:ok, "resign"}
       :pass   ->

@@ -8,10 +8,12 @@ defmodule WeiqiDMC.Profile.PlayMove do
   def run do
     state = State.empty_board(9) |> Board.force_next_player(:black)
 
+    :random.seed(:os.timestamp)
+
     #Slow... like SUPER SLOW
-    :fprof.apply(&MCRave.generate_move/2, [state, 1])
+    :fprof.apply(&MCRave.sim_default/2, [state, []])
     :fprof.profile
-    :fprof.analyse [callers: true, sort: :own, totals: true, details: true]
+    :fprof.analyse [dest: 'profile.out']
 
     # profile do
     #   MCRave.sim_default state, []

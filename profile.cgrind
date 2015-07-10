@@ -1,0 +1,2130 @@
+events: Time
+summary: 7653629
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',do_fold,4}
+1 1356423
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_fold,4}
+calls=370256 1
+1 0
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_fold_each,3}
+calls=370256 1
+1 870962
+cfl=pseudo
+cfn=garbage_collect
+calls=23 1
+1 162
+cfl=pseudo
+cfn=suspend
+calls=314 1
+1 1451
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-reduce/3-lists^foldl/2-0-',3}
+1 787273
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-reduce/3-lists^foldl/2-0-',3}
+calls=175644 1
+1 0
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-filter/2-fun-0-',3}
+calls=100920 1
+1 7005418
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-map/2-fun-0-',3}
+calls=63809 1
+1 2234286
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-chunk/4-fun-0-',5}
+calls=7938 1
+1 27348
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-reject/2-fun-0-',3}
+calls=280 1
+1 5366
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-do_into/2-fun-0-',3}
+calls=263 1
+1 5573
+cfl=pseudo
+cfn=garbage_collect
+calls=25 1
+1 211
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-3-',2}
+calls=22 1
+1 2849
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-5-',2}
+calls=22 1
+1 3127
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','-count_stones/2-fun-1-',2}
+calls=6 1
+1 302
+cfl=pseudo
+cfn=suspend
+calls=91 1
+1 437
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',do_fold_each,3}
+1 666636
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','-to_list/1-fun-0-',2}
+calls=92761 1
+1 150227
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_fold,4}
+calls=16645 1
+1 0
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','-intersection/2-fun-0-',3}
+calls=1577 1
+1 21404
+cfl=pseudo
+cfn=garbage_collect
+calls=45 1
+1 354
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','-union/2-fun-0-',2}
+calls=76 1
+1 1389
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','-union/2-fun-1-',2}
+calls=40 1
+1 748
+cfl=pseudo
+cfn=suspend
+calls=36 1
+1 170
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-filter/2-fun-0-',3}
+1 368981
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-1-',3}
+calls=13529 1
+1 128134
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-0-',2}
+calls=13529 1
+1 79121
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-3-',3}
+calls=13529 1
+1 77677
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-surroundings/2-fun-1-',1}
+calls=29044 1
+1 51693
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-is_eyeish_for?/3-fun-1-',2}
+calls=12117 1
+1 20504
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State','-empty_coordinates/1-fun-0-',1}
+calls=7938 1
+1 15035
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','-default_policy/1-fun-0-',2}
+calls=3490 1
+1 3237981
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-7-',2}
+calls=2453 1
+1 290030
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','-legal_moves/1-fun-0-',2}
+calls=3726 1
+1 3634236
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-1-',3}
+calls=1480 1
+1 10046
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-compute_valid_move/3-fun-0-',3}
+calls=85 1
+1 23848
+cfl=pseudo
+cfn=garbage_collect
+calls=38 1
+1 383
+cfl=pseudo
+cfn=suspend
+calls=20 1
+1 349
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet','member?',2}
+1 271359
+cfl=erlang
+cfn={erlang,phash2,1}
+calls=71061 1
+1 129661
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','do_member?',3}
+calls=71061 1
+1 132008
+cfl=pseudo
+cfn=garbage_collect
+calls=5 1
+1 66
+cfl=pseudo
+cfn=suspend
+calls=10 1
+1 47
+fl='Elixir.Enum'
+fn={'Elixir.Enum',do_find,3}
+1 235458
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',do_find,3}
+calls=56752 1
+1 0
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-group_containing/2-fun-0-',2}
+calls=62571 1
+1 701794
+cfl=pseudo
+cfn=garbage_collect
+calls=4 1
+1 41
+cfl=pseudo
+cfn=suspend
+calls=10 1
+1 46
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-map/2-fun-0-',3}
+1 233151
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-surroundings/2-fun-0-',3}
+calls=29044 1
+1 112186
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-is_eyeish_for?/3-fun-0-',2}
+calls=12117 1
+1 44075
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State','-to_list/1-fun-0-',2}
+calls=7938 1
+1 15385
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-6-',2}
+calls=2384 1
+1 630596
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State','-empty_coordinates/1-fun-1-',1}
+calls=3726 1
+1 7101
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-0-',3}
+calls=1480 1
+1 19046
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-2-',2}
+calls=2960 1
+1 509811
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-4-',2}
+calls=2859 1
+1 474849
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State','-to_list/1-fun-1-',1}
+calls=882 1
+1 167516
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-process_capture_group/3-fun-1-',3}
+calls=265 1
+1 66855
+cfl=pseudo
+cfn=garbage_collect
+calls=22 1
+1 184
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-2-',1}
+calls=74 1
+1 156
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-4-',1}
+calls=74 1
+1 152
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','-count_stones/2-fun-0-',2}
+calls=6 1
+1 13
+cfl=pseudo
+cfn=suspend
+calls=20 1
+1 91
+fl=lists
+fn={lists,reverse,1}
+1 225084
+cfl=lists
+cfn={lists,reverse,2}
+calls=44255 1
+1 78187
+cfl=pseudo
+cfn=garbage_collect
+calls=20 1
+1 230
+fl='Elixir.Enum'
+fn={'Elixir.Enum','do_any?',2}
+1 196523
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','do_any?',2}
+calls=54093 1
+1 0
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','-ruin_perfectly_good_eye?/2-fun-0-',3}
+calls=54178 1
+1 2295289
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 17
+cfl=pseudo
+cfn=suspend
+calls=59 1
+1 333
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet','-to_list/1-fun-0-',2}
+1 149965
+cfl=pseudo
+cfn=garbage_collect
+calls=35 1
+1 262
+fl=erlang
+fn={erlang,phash2,1}
+1 144688
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','-ruin_perfectly_good_eye?/2-fun-0-',3}
+1 136866
+cfl='Elixir.Set'
+cfn={'Elixir.Set',to_list,1}
+calls=26675 1
+1 2158296
+cfl=pseudo
+cfn=garbage_collect
+calls=7 1
+1 79
+cfl=pseudo
+cfn=suspend
+calls=14 1
+1 48
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet','do_member?',3}
+1 132008
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','do_member?',3}
+calls=2948 1
+1 0
+fl='Elixir.Set'
+fn={'Elixir.Set','member?',2}
+1 122858
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','member?',2}
+calls=63665 1
+1 467410
+cfl=pseudo
+cfn=garbage_collect
+calls=9 1
+1 74
+cfl=pseudo
+cfn=suspend
+calls=5 1
+1 52
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-group_containing/2-fun-0-',2}
+1 122797
+cfl='Elixir.Set'
+cfn={'Elixir.Set','member?',2}
+calls=62571 1
+1 578973
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 6
+cfl=pseudo
+cfn=suspend
+calls=5 1
+1 18
+fl='Elixir.Enum'
+fn={'Elixir.Enum',reduce,3}
+1 119391
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-reduce/3-lists^foldl/2-0-',3}
+calls=53935 1
+1 7533332
+cfl='Elixir.Enumerable'
+cfn={'Elixir.Enumerable',reduce,3}
+calls=2384 1
+1 590364
+cfl=pseudo
+cfn=garbage_collect
+calls=11 1
+1 97
+cfl=pseudo
+cfn=suspend
+calls=13 1
+1 76
+fl='Elixir.Enum'
+fn={'Elixir.Enum',filter,2}
+1 117274
+cfl=lists
+cfn={lists,reverse,1}
+calls=28721 1
+1 94438
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,3}
+calls=28721 1
+1 7082636
+cfl=pseudo
+cfn=garbage_collect
+calls=99 1
+1 1025
+cfl=pseudo
+cfn=suspend
+calls=8 1
+1 33
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',to_list,1}
+1 105767
+cfl=lists
+cfn={lists,reverse,1}
+calls=29322 1
+1 114933
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',set_fold,3}
+calls=29322 1
+1 2185390
+cfl=pseudo
+cfn=garbage_collect
+calls=61 1
+1 513
+cfl=pseudo
+cfn=suspend
+calls=30 1
+1 158
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',do_reduce_each,4}
+1 104797
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','-do_reduce/5-fun-0-',5}
+calls=32841 1
+1 345394
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-reduce/3-fun-0-',3}
+calls=9522 1
+1 96999
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_reduce,5}
+calls=1967 1
+1 0
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State',board_value,2}
+1 100691
+cfl=pseudo
+cfn=garbage_collect
+calls=32 1
+1 279
+fl='Elixir.Enum'
+fn={'Elixir.Enum',map,2}
+1 93509
+cfl=lists
+cfn={lists,reverse,1}
+calls=23425 1
+1 87817
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,3}
+calls=23425 1
+1 371018
+cfl=pseudo
+cfn=garbage_collect
+calls=54 1
+1 483
+cfl=pseudo
+cfn=suspend
+calls=13 1
+1 48
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',pre_compute_valide_move,2}
+1 91214
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=15272 1
+1 25854
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=11454 1
+1 1792568
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',sum,1}
+calls=3818 1
+1 45416
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',surroundings,2}
+calls=3818 1
+1 453337
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',uniq,1}
+calls=7636 1
+1 257086
+cfl=pseudo
+cfn=garbage_collect
+calls=19 1
+1 191
+cfl=pseudo
+cfn=suspend
+calls=5 1
+1 31
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',do_reduce,5}
+1 90869
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_reduce_each,4}
+calls=34808 1
+1 370600
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','-reduce/3-fun-1-',1}
+calls=2384 1
+1 4874
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','-do_reduce/5-fun-0-',5}
+calls=1967 1
+1 0
+cfl=pseudo
+cfn=garbage_collect
+calls=106 1
+1 1047
+fl=lists
+fn={lists,reverse,2}
+1 78187
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet','-do_reduce/5-fun-0-',5}
+1 77819
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_reduce,5}
+calls=34808 1
+1 0
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-1-',3}
+1 77492
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',board_value,2}
+calls=13529 1
+1 26186
+cfl='Elixir.WeiqiDMC.Helpers'
+cfn={'Elixir.WeiqiDMC.Helpers',opposite_color,1}
+calls=13529 1
+1 24395
+cfl=pseudo
+cfn=garbage_collect
+calls=4 1
+1 37
+cfl=pseudo
+cfn=suspend
+calls=3 1
+1 25
+fl='Elixir.Enum'
+fn={'Elixir.Enum',do_uniq,3}
+1 63803
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',put,2}
+calls=4837 1
+1 67867
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','member?',2}
+calls=5819 1
+1 52056
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',do_uniq,3}
+calls=5819 1
+1 0
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-uniq/1-fun-0-',1}
+calls=5819 1
+1 10581
+cfl=pseudo
+cfn=suspend
+calls=3 1
+1 13
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-surroundings/2-fun-0-',3}
+1 57288
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',compute_coordinate_from_delta,3}
+calls=29044 1
+1 54822
+cfl=pseudo
+cfn=garbage_collect
+calls=5 1
+1 43
+cfl=pseudo
+cfn=suspend
+calls=7 1
+1 33
+fl='Elixir.Set'
+fn={'Elixir.Set',to_list,1}
+1 55184
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',to_list,1}
+calls=29322 1
+1 2406761
+cfl=pseudo
+cfn=garbage_collect
+calls=11 1
+1 86
+cfl=pseudo
+cfn=suspend
+calls=9 1
+1 49
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-map_reduce/3-lists^mapfoldl/2-0-',3}
+1 54633
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-map_reduce/3-lists^mapfoldl/2-0-',3}
+calls=8820 1
+1 0
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-with_index/1-fun-0-',2}
+calls=8820 1
+1 17243
+cfl=pseudo
+cfn=garbage_collect
+calls=14 1
+1 149
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 3
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',compute_coordinate_from_delta,3}
+1 54472
+cfl=pseudo
+cfn=garbage_collect
+calls=38 1
+1 350
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',set_fold,3}
+1 53726
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_fold,4}
+calls=29637 1
+1 2198964
+cfl=pseudo
+cfn=suspend
+calls=11 1
+1 54
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-0-',2}
+1 52004
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',board_value,2}
+calls=13529 1
+1 27088
+cfl=pseudo
+cfn=garbage_collect
+calls=3 1
+1 23
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 6
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-3-',3}
+1 51798
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',board_value,2}
+calls=13529 1
+1 25859
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 14
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 6
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-surroundings/2-fun-1-',1}
+1 51631
+cfl=pseudo
+cfn=garbage_collect
+calls=7 1
+1 62
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-filter/2-fun-1-',3}
+1 39036
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-5-',2}
+calls=9522 1
+1 19162
+cfl=pseudo
+cfn=garbage_collect
+calls=15 1
+1 172
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-reduce/3-fun-0-',3}
+1 38629
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-filter/2-fun-1-',3}
+calls=9522 1
+1 58370
+fl=lists
+fn={lists,do_flatten,2}
+1 35861
+cfl=lists
+cfn={lists,do_flatten,2}
+calls=9702 1
+1 0
+cfl=pseudo
+cfn=garbage_collect
+calls=8 1
+1 89
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 7
+fl='Elixir.Enum'
+fn={'Elixir.Enum',uniq_by,2}
+1 33302
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',do_uniq,3}
+calls=7636 1
+1 194320
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',new,0}
+calls=7636 1
+1 13388
+cfl=pseudo
+cfn=suspend
+calls=4 1
+1 28
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',put,2}
+1 31091
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_put,3}
+calls=5401 1
+1 32344
+cfl=erlang
+cfn={erlang,phash2,1}
+calls=5401 1
+1 13574
+cfl=pseudo
+cfn=garbage_collect
+calls=9 1
+1 101
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 3
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',surroundings,2}
+1 29424
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=7261 1
+1 6371
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=7261 1
+1 425462
+cfl=pseudo
+cfn=garbage_collect
+calls=24 1
+1 204
+cfl=pseudo
+cfn=suspend
+calls=6 1
+1 35
+fl='Elixir.WeiqiDMC.Helpers'
+fn={'Elixir.WeiqiDMC.Helpers',opposite_color,1}
+1 27261
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','ruin_perfectly_good_eye?',2}
+1 25199
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','is_eyeish_for?',3}
+calls=3409 1
+1 695305
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','any?',2}
+calls=3409 1
+1 2498746
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','empty?',1}
+calls=3490 1
+1 6426
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 13
+cfl=pseudo
+cfn=suspend
+calls=2 1
+1 10
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','is_eyeish_for?',3}
+1 24689
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',surroundings,2}
+calls=3409 1
+1 361173
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=3409 1
+1 0
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=3409 1
+1 172060
+cfl=pseudo
+cfn=garbage_collect
+calls=14 1
+1 116
+cfl=pseudo
+cfn=suspend
+calls=8 1
+1 44
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-is_eyeish_for?/3-fun-0-',2}
+1 22347
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',board_value,2}
+calls=12117 1
+1 21665
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 32
+cfl=pseudo
+cfn=suspend
+calls=6 1
+1 31
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',do_put,3}
+1 21466
+cfl=erlang
+cfn={erlang,setelement,3}
+calls=5777 1
+1 10641
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_put,3}
+calls=83 1
+1 0
+cfl=pseudo
+cfn=garbage_collect
+calls=22 1
+1 237
+fl=elixir_aliases
+fn={elixir_aliases,do_concat,2}
+1 21391
+cfl=elixir_aliases
+cfn={elixir_aliases,to_partial,1}
+calls=2510 1
+1 4772
+cfl=elixir_aliases
+cfn={elixir_aliases,do_concat,2}
+calls=2510 1
+1 0
+cfl=erlang
+cfn={erlang,atom_to_binary,2}
+calls=2510 1
+1 4568
+cfl=pseudo
+cfn=garbage_collect
+calls=12 1
+1 144
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-is_eyeish_for?/3-fun-1-',2}
+1 20497
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 7
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-chunk/4-fun-0-',5}
+1 19843
+cfl=lists
+cfn={lists,reverse,1}
+calls=882 1
+1 5522
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',take,2}
+calls=882 1
+1 1765
+cfl=pseudo
+cfn=garbage_collect
+calls=19 1
+1 218
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-5-',2}
+1 19154
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 8
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-with_index/1-fun-0-',2}
+1 17003
+cfl=pseudo
+cfn=garbage_collect
+calls=22 1
+1 240
+fl='Elixir.Enum'
+fn={'Elixir.Enum',sum,1}
+1 16410
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,3}
+calls=3818 1
+1 560
+cfl=erlang
+cfn={erlang,make_fun,3}
+calls=3818 1
+1 7664
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 12
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 12
+fl=elixir_aliases
+fn={elixir_aliases,do_concat,1}
+1 16117
+cfl=elixir_aliases
+cfn={elixir_aliases,do_concat,2}
+calls=2510 1
+1 30875
+cfl=elixir_aliases
+cfn={elixir_aliases,do_concat,1}
+calls=2510 1
+1 0
+cfl=erlang
+cfn={erlang,atom_to_binary,2}
+calls=2510 1
+1 4576
+cfl=pseudo
+cfn=garbage_collect
+calls=15 1
+1 180
+fl='Elixir.Enum'
+fn={'Elixir.Enum',uniq,1}
+1 15961
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',uniq_by,2}
+calls=7636 1
+1 241038
+cfl=pseudo
+cfn=garbage_collect
+calls=9 1
+1 87
+fl=elixir_aliases
+fn={elixir_aliases,concat,1}
+1 15456
+cfl=elixir_aliases
+cfn={elixir_aliases,do_concat,1}
+calls=2510 1
+1 51749
+cfl=erlang
+cfn={erlang,binary_to_atom,2}
+calls=2510 1
+1 5425
+cfl=pseudo
+cfn=garbage_collect
+calls=3 1
+1 37
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State','-to_list/1-fun-0-',2}
+1 15265
+cfl=pseudo
+cfn=garbage_collect
+calls=12 1
+1 120
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State','-empty_coordinates/1-fun-0-',1}
+1 14963
+cfl=pseudo
+cfn=garbage_collect
+calls=4 1
+1 72
+fl=code_server
+fn={code_server,call,2}
+1 14683
+cfl=pseudo
+cfn=garbage_collect
+calls=3 1
+1 42
+cfl=pseudo
+cfn=suspend
+calls=2510 1
+1 28194
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','valid_move?',2}
+1 14680
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',pre_compute_valide_move,2}
+calls=3726 1
+1 3611339
+fl='Elixir.Enumerable'
+fn={'Elixir.Enumerable',impl_for,1}
+1 14480
+cfl='Elixir.Enumerable'
+cfn={'Elixir.Enumerable','impl_for?',1}
+calls=2384 1
+1 90142
+cfl='Elixir.Enumerable.HashSet'
+cfn={'Elixir.Enumerable.HashSet','__impl__',1}
+calls=2384 1
+1 4967
+cfl='Elixir.Module'
+cfn={'Elixir.Module',concat,2}
+calls=2384 1
+1 73461
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 6
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',new,0}
+1 13605
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','-default_policy/1-fun-0-',2}
+1 12282
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','ruin_perfectly_good_eye?',2}
+calls=3490 1
+1 3225699
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',group_containing,2}
+1 11762
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',find,2}
+calls=5819 1
+1 960374
+cfl=pseudo
+cfn=garbage_collect
+calls=11 1
+1 106
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 5
+fl='Elixir.Enum'
+fn={'Elixir.Enum',find,2}
+1 11655
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',find,3}
+calls=5819 1
+1 948719
+fl='Elixir.Enum'
+fn={'Elixir.Enum',find,3}
+1 11380
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',do_find,3}
+calls=5819 1
+1 937339
+fl='Elixir.Enumerable'
+fn={'Elixir.Enumerable','impl_for?',1}
+1 10979
+cfl='Elixir.Kernel'
+cfn={'Elixir.Kernel','function_exported?',3}
+calls=2384 1
+1 15145
+cfl='Elixir.Code'
+cfn={'Elixir.Code','ensure_compiled?',1}
+calls=2384 1
+1 64018
+fl=erlang
+fn={erlang,setelement,3}
+1 10974
+fl='Elixir.Kernel'
+fn={'Elixir.Kernel','function_exported?',3}
+1 10638
+cfl=erlang
+cfn={erlang,function_exported,3}
+calls=2510 1
+1 5358
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-uniq/1-fun-0-',1}
+1 10566
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 15
+fl='Elixir.Enumerable'
+fn={'Elixir.Enumerable',reduce,3}
+1 10294
+cfl='Elixir.Enumerable'
+cfn={'Elixir.Enumerable','impl_for!',1}
+calls=2384 1
+1 192122
+cfl='Elixir.Enumerable.HashSet'
+cfn={'Elixir.Enumerable.HashSet',reduce,3}
+calls=2384 1
+1 387941
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 7
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-7-',2}
+1 10134
+cfl='Elixir.Set'
+cfn={'Elixir.Set',to_list,1}
+calls=2453 1
+1 279864
+cfl=pseudo
+cfn=garbage_collect
+calls=3 1
+1 30
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 2
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-6-',2}
+1 9617
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=2384 1
+1 20859
+cfl=pseudo
+cfn=garbage_collect
+calls=8 1
+1 89
+fl='Elixir.Code'
+fn={'Elixir.Code',ensure_compiled,1}
+1 9539
+cfl=code
+cfn={code,ensure_loaded,1}
+calls=2510 1
+1 53466
+cfl=pseudo
+cfn=garbage_collect
+calls=4 1
+1 35
+fl='Elixir.Code'
+fn={'Elixir.Code','ensure_compiled?',1}
+1 9425
+cfl='Elixir.Code'
+cfn={'Elixir.Code',ensure_compiled,1}
+calls=2510 1
+1 63040
+fl=pseudo
+fn=garbage_collect
+1 9311
+fl=erlang
+fn={erlang,atom_to_binary,2}
+1 9144
+fl='Elixir.Enumerable'
+fn={'Elixir.Enumerable','impl_for!',1}
+1 9056
+cfl='Elixir.Enumerable'
+cfn={'Elixir.Enumerable',impl_for,1}
+calls=2384 1
+1 183056
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 10
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','-legal_moves/1-fun-0-',2}
+1 8217
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','valid_move?',2}
+calls=3726 1
+1 3626019
+fl=erlang
+fn={erlang,make_fun,3}
+1 7664
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State','-empty_coordinates/1-fun-1-',1}
+1 7067
+cfl=pseudo
+cfn=garbage_collect
+calls=4 1
+1 34
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-0-',3}
+1 7037
+cfl='Elixir.WeiqiDMC.Helpers'
+cfn={'Elixir.WeiqiDMC.Helpers',opposite_color,1}
+calls=1480 1
+1 2666
+cfl='Elixir.Set'
+cfn={'Elixir.Set',delete,2}
+calls=751 1
+1 9343
+fl='Elixir.Enum'
+fn={'Elixir.Enum','empty?',1}
+1 6780
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 14
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet','-intersection/2-fun-0-',3}
+1 6765
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet','member?',2}
+calls=1577 1
+1 13675
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',put,2}
+calls=60 1
+1 953
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 11
+fl='Elixir.Enum'
+fn={'Elixir.Enum','any?',2}
+1 6573
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','do_any?',2}
+calls=3409 1
+1 2492162
+cfl=pseudo
+cfn=suspend
+calls=2 1
+1 11
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-2-',2}
+1 6316
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',group_containing,2}
+calls=2960 1
+1 503457
+cfl=pseudo
+cfn=garbage_collect
+calls=4 1
+1 38
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-pre_compute_valide_move/2-fun-4-',2}
+1 6047
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',group_containing,2}
+calls=2859 1
+1 468790
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 12
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',reduce,3}
+1 5778
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_reduce,5}
+calls=2384 1
+1 376405
+fl='Elixir.Enumerable.HashSet'
+fn={'Elixir.Enumerable.HashSet',reduce,3}
+1 5758
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',reduce,3}
+calls=2384 1
+1 382183
+fl=erlang
+fn={erlang,binary_to_atom,2}
+1 5425
+fl=code
+fn={code,ensure_loaded,1}
+1 5380
+cfl=code
+cfn={code,call,1}
+calls=2510 1
+1 48053
+cfl=pseudo
+cfn=garbage_collect
+calls=3 1
+1 27
+cfl=pseudo
+cfn=suspend
+calls=2 1
+1 6
+fl=erlang
+fn={erlang,function_exported,3}
+1 5358
+fl='Elixir.Module'
+fn={'Elixir.Module',concat,2}
+1 5159
+cfl=elixir_aliases
+cfn={elixir_aliases,concat,1}
+calls=2510 1
+1 72667
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 26
+fl=code
+fn={code,call,1}
+1 5134
+cfl=code_server
+cfn={code_server,call,2}
+calls=2510 1
+1 42919
+fl='Elixir.Enumerable.HashSet'
+fn={'Elixir.Enumerable.HashSet','__impl__',1}
+1 4967
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet','-reduce/3-fun-1-',1}
+1 4874
+fl=elixir_aliases
+fn={elixir_aliases,to_partial,1}
+1 4725
+cfl=pseudo
+cfn=garbage_collect
+calls=5 1
+1 47
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',delete,2}
+1 4639
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_delete,3}
+calls=803 1
+1 2602
+cfl=erlang
+cfn={erlang,phash2,1}
+calls=803 1
+1 1453
+fl='Elixir.Enum'
+fn={'Elixir.Enum',with_index,1}
+1 4072
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map_reduce,3}
+calls=980 1
+1 74142
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State','-to_list/1-fun-1-',1}
+1 3980
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=882 1
+1 0
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',with_index,1}
+calls=882 1
+1 70339
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 23
+fl='Elixir.Enum'
+fn={'Elixir.Enum',do_fetch,2}
+1 3152
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',do_fetch,2}
+calls=1607 1
+1 0
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-1-',3}
+1 2892
+cfl='Elixir.Set'
+cfn={'Elixir.Set','member?',2}
+calls=729 1
+1 7154
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',process_move,5}
+1 2467
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',update_board,3}
+calls=92 1
+1 1746
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=196 1
+1 34102
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=92 1
+1 22237
+cfl='Elixir.Set'
+cfn={'Elixir.Set',put,2}
+calls=92 1
+1 1775
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',into,2}
+calls=92 1
+1 19310
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,2}
+calls=104 1
+1 6822
+cfl=erlang
+cfn={erlang,'--',2}
+calls=52 1
+1 206
+cfl=erlang
+cfn={erlang,'++',2}
+calls=92 1
+1 204
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','empty?',1}
+calls=92 1
+1 189
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',new,0}
+calls=80 1
+1 145
+cfl='Elixir.Set'
+cfn={'Elixir.Set',delete,2}
+calls=52 1
+1 1167
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 17
+fl='Elixir.Enum'
+fn={'Elixir.Enum',map_reduce,3}
+1 2114
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','-map_reduce/3-lists^mapfoldl/2-0-',3}
+calls=980 1
+1 72028
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',do_delete,3}
+1 2113
+cfl=erlang
+cfn={erlang,setelement,3}
+calls=141 1
+1 276
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_delete,3}
+calls=72 1
+1 0
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_compact_node,1}
+calls=25 1
+1 213
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-process_capture_group/3-fun-1-',3}
+1 1946
+cfl='Elixir.Set'
+cfn={'Elixir.Set',intersection,2}
+calls=265 1
+1 62962
+cfl='Elixir.Set'
+cfn={'Elixir.Set',size,1}
+calls=265 1
+1 1288
+cfl='Elixir.Set'
+cfn={'Elixir.Set',put,2}
+calls=33 1
+1 659
+fl='Elixir.Set'
+fn={'Elixir.Set',delete,2}
+1 1813
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',delete,2}
+calls=803 1
+1 8694
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 3
+fl='Elixir.Enum'
+fn={'Elixir.Enum',take,2}
+1 1765
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',compute_valid_move,3}
+1 1357
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',process_move,5}
+calls=92 1
+1 90387
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',process_capture,4}
+calls=92 1
+1 88067
+cfl='Elixir.WeiqiDMC.Helpers'
+cfn={'Elixir.WeiqiDMC.Helpers',opposite_color,1}
+calls=92 1
+1 190
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',remove_ko,2}
+calls=92 1
+1 166
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=9 1
+1 24578
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',surroundings,2}
+calls=9 1
+1 1076
+cfl='Elixir.List'
+cfn={'Elixir.List',first,1}
+calls=18 1
+1 32
+cfl='Elixir.Set'
+cfn={'Elixir.Set',to_list,1}
+calls=9 1
+1 619
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',into,2}
+calls=9 1
+1 1728
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',new,0}
+calls=9 1
+1 15
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State',update_board,3}
+1 1282
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',coordinate_to_index,2}
+calls=117 1
+1 309
+cfl=erlang
+cfn={erlang,delete_element,2}
+calls=117 1
+1 275
+cfl=erlang
+cfn={erlang,insert_element,3}
+calls=117 1
+1 268
+cfl=pseudo
+cfn=garbage_collect
+calls=6 1
+1 55
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State',to_list,1}
+1 1272
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=98 1
+1 176191
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',with_index,1}
+calls=98 1
+1 7875
+cfl='Elixir.List'
+cfn={'Elixir.List',flatten,1}
+calls=98 1
+1 36460
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',chunk,2}
+calls=98 1
+1 64498
+cfl=erlang
+cfn={erlang,tuple_to_list,1}
+calls=98 1
+1 212
+cfl=pseudo
+cfn=garbage_collect
+calls=5 1
+1 54
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-reject/2-fun-0-',3}
+1 1259
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board','-process_capture_group/3-fun-0-',2}
+calls=280 1
+1 4107
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave',sim_default,2}
+1 1175
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave',sim_default,2}
+calls=98 1
+1 0
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave',default_policy,1}
+calls=98 1
+1 7343441
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',compute_move,3}
+calls=98 1
+1 308108
+cfl=erlang
+cfn={erlang,'++',2}
+calls=98 1
+1 235
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','game_over?',1}
+calls=99 1
+1 194
+cfl=pseudo
+cfn=garbage_collect
+calls=2 1
+1 26
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','outcome?',1}
+calls=1 1
+1 432
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave',default_policy,1}
+1 1025
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=98 1
+1 3264722
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave',legal_moves,1}
+calls=98 1
+1 4072407
+cfl=random
+cfn={random,uniform,1}
+calls=92 1
+1 1193
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',at,2}
+calls=92 1
+1 3915
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum','empty?',1}
+calls=98 1
+1 179
+fl='Elixir.Collectable.HashSet'
+fn={'Elixir.Collectable.HashSet','-into/1-fun-0-',2}
+1 895
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',put,2}
+calls=263 1
+1 4296
+fl='Elixir.Collectable'
+fn={'Elixir.Collectable',impl_for,1}
+1 887
+cfl='Elixir.Collectable'
+cfn={'Elixir.Collectable','impl_for?',1}
+calls=126 1
+1 9924
+cfl='Elixir.Collectable.HashSet'
+cfn={'Elixir.Collectable.HashSet','__impl__',1}
+calls=126 1
+1 300
+cfl='Elixir.Module'
+cfn={'Elixir.Module',concat,2}
+calls=126 1
+1 4391
+fl='Elixir.Enum'
+fn={'Elixir.Enum',chunk,4}
+1 846
+cfl=lists
+cfn={lists,reverse,1}
+calls=98 1
+1 587
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,3}
+calls=98 1
+1 62595
+cfl=erlang
+cfn={erlang,max,2}
+calls=98 1
+1 222
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 10
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-compute_valid_move/3-fun-0-',3}
+1 793
+cfl='Elixir.Set'
+cfn={'Elixir.Set',to_list,1}
+calls=170 1
+1 22010
+cfl='Elixir.Set'
+cfn={'Elixir.Set','member?',2}
+calls=85 1
+1 865
+cfl='Elixir.List'
+cfn={'Elixir.List',first,1}
+calls=85 1
+1 180
+fl='Elixir.Set'
+fn={'Elixir.Set',size,1}
+1 777
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',size,1}
+calls=282 1
+1 578
+fl='Elixir.Set'
+fn={'Elixir.Set',intersection,2}
+1 753
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',intersection,2}
+calls=265 1
+1 62202
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 7
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',intersection,2}
+1 736
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',set_fold,3}
+calls=265 1
+1 61466
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-process_capture_group/3-fun-0-',2}
+1 705
+cfl='Elixir.Set'
+cfn={'Elixir.Set','member?',2}
+calls=280 1
+1 3402
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State',empty_coordinates,1}
+1 667
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',to_list,1}
+calls=98 1
+1 286562
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=98 1
+1 79951
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=98 1
+1 38529
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',compute_move,2}
+1 663
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',pre_compute_valide_move,2}
+calls=92 1
+1 97993
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',compute_valid_move,3}
+calls=92 1
+1 208215
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',board_value,2}
+calls=92 1
+1 172
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',force_opposite_player,1}
+calls=6 1
+1 29
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',remove_ko,2}
+calls=6 1
+1 8
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 6
+fl='Elixir.Enum'
+fn={'Elixir.Enum',do_into,2}
+1 661
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',into,4}
+calls=126 1
+1 8311
+cfl='Elixir.Collectable'
+cfn={'Elixir.Collectable',into,1}
+calls=126 1
+1 16862
+fl='Elixir.Enum'
+fn={'Elixir.Enum','-do_into/2-fun-0-',3}
+1 637
+cfl='Elixir.Collectable.HashSet'
+cfn={'Elixir.Collectable.HashSet','-into/1-fun-0-',2}
+calls=263 1
+1 4936
+fl='Elixir.Enum'
+fn={'Elixir.Enum',into,4}
+1 634
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,3}
+calls=126 1
+1 7422
+cfl='Elixir.Collectable.HashSet'
+cfn={'Elixir.Collectable.HashSet','-into/1-fun-0-',2}
+calls=126 1
+1 255
+fl='Elixir.Collectable'
+fn={'Elixir.Collectable','impl_for?',1}
+1 626
+cfl='Elixir.Kernel'
+cfn={'Elixir.Kernel','function_exported?',3}
+calls=126 1
+1 851
+cfl='Elixir.Code'
+cfn={'Elixir.Code','ensure_compiled?',1}
+calls=126 1
+1 8447
+fl='Elixir.Collectable'
+fn={'Elixir.Collectable',into,1}
+1 589
+cfl='Elixir.Collectable'
+cfn={'Elixir.Collectable','impl_for!',1}
+calls=126 1
+1 15994
+cfl='Elixir.Collectable.HashSet'
+cfn={'Elixir.Collectable.HashSet',into,1}
+calls=126 1
+1 279
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',size,1}
+1 578
+fl=random
+fn={random,uniform,0}
+1 577
+cfl=erlang
+cfn={erlang,put,2}
+calls=92 1
+1 226
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 6
+fl='Elixir.Collectable'
+fn={'Elixir.Collectable','impl_for!',1}
+1 492
+cfl='Elixir.Collectable'
+cfn={'Elixir.Collectable',impl_for,1}
+calls=126 1
+1 15502
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',process_capture_group,3}
+1 457
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',update_board,3}
+calls=25 1
+1 443
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',process_capture_group,3}
+calls=25 1
+1 0
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=25 1
+1 69839
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reject,2}
+calls=25 1
+1 7143
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',surroundings,2}
+calls=25 1
+1 3328
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',into,2}
+calls=25 1
+1 5109
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',new,0}
+calls=25 1
+1 51
+fl=erlang
+fn={erlang,'++',2}
+1 439
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave',legal_moves,1}
+1 430
+cfl='Elixir.WeiqiDMC.Board.State'
+cfn={'Elixir.WeiqiDMC.Board.State',empty_coordinates,1}
+calls=98 1
+1 405709
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',filter,2}
+calls=98 1
+1 3666268
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',compute_move,3}
+1 417
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',compute_move,2}
+calls=98 1
+1 307086
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',force_next_player,2}
+calls=98 1
+1 600
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 5
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',force_next_player,2}
+1 415
+cfl='Elixir.WeiqiDMC.Helpers'
+cfn={'Elixir.WeiqiDMC.Helpers',normalize_color,1}
+calls=98 1
+1 185
+fl=random
+fn={random,uniform,1}
+1 384
+cfl=random
+cfn={random,uniform,0}
+calls=92 1
+1 809
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',process_capture,4}
+1 345
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',process_capture_group,3}
+calls=15 1
+1 86370
+cfl='Elixir.Set'
+cfn={'Elixir.Set',to_list,1}
+calls=15 1
+1 1291
+cfl='Elixir.WeiqiDMC.Board'
+cfn={'Elixir.WeiqiDMC.Board',process_capture,4}
+calls=15 1
+1 0
+cfl='Elixir.Set'
+cfn={'Elixir.Set',size,1}
+calls=15 1
+1 61
+fl='Elixir.Set'
+fn={'Elixir.Set',put,2}
+1 331
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',put,2}
+calls=125 1
+1 2103
+fl='Elixir.Enum'
+fn={'Elixir.Enum',at,3}
+1 326
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',fetch,2}
+calls=92 1
+1 3383
+fl='Elixir.Enum'
+fn={'Elixir.Enum',into,2}
+1 313
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',do_into,2}
+calls=126 1
+1 25834
+fl='Elixir.WeiqiDMC.Board.State'
+fn={'Elixir.WeiqiDMC.Board.State',coordinate_to_index,2}
+1 302
+cfl=pseudo
+cfn=garbage_collect
+calls=1 1
+1 7
+fl='Elixir.Collectable.HashSet'
+fn={'Elixir.Collectable.HashSet','__impl__',1}
+1 300
+fl='Elixir.Collectable.HashSet'
+fn={'Elixir.Collectable.HashSet',into,1}
+1 279
+fl=erlang
+fn={erlang,delete_element,2}
+1 275
+fl=erlang
+fn={erlang,insert_element,3}
+1 268
+fl=lists
+fn={lists,flatten,1}
+1 253
+cfl=lists
+cfn={lists,do_flatten,2}
+calls=98 1
+1 35957
+fl='Elixir.List'
+fn={'Elixir.List',flatten,1}
+1 250
+cfl=lists
+cfn={lists,flatten,1}
+calls=98 1
+1 36210
+fl='Elixir.Enum'
+fn={'Elixir.Enum',chunk,2}
+1 238
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',chunk,4}
+calls=98 1
+1 64260
+fl='Elixir.Enum'
+fn={'Elixir.Enum',fetch,2}
+1 231
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',do_fetch,2}
+calls=92 1
+1 3152
+fl=erlang
+fn={erlang,put,2}
+1 226
+fl=erlang
+fn={erlang,max,2}
+1 222
+fl='Elixir.Enum'
+fn={'Elixir.Enum',reduce,2}
+1 217
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,3}
+calls=104 1
+1 6605
+fl=erlang
+fn={erlang,tuple_to_list,1}
+1 212
+fl='Elixir.List'
+fn={'Elixir.List',first,1}
+1 212
+fl=erlang
+fn={erlang,'--',2}
+1 206
+fl='Elixir.Enum'
+fn={'Elixir.Enum',at,2}
+1 206
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',at,3}
+calls=92 1
+1 3709
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','game_over?',1}
+1 194
+fl='Elixir.WeiqiDMC.Helpers'
+fn={'Elixir.WeiqiDMC.Helpers',normalize_color,1}
+1 185
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',remove_ko,2}
+1 174
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet','-union/2-fun-0-',2}
+1 163
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',put,2}
+calls=76 1
+1 1226
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-2-',1}
+1 156
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',do_compact_node,1}
+1 156
+cfl=erlang
+cfn={erlang,setelement,3}
+calls=26 1
+1 57
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',do_compact_node,1}
+calls=1 1
+1 0
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-4-',1}
+1 152
+fl='Elixir.Set'
+fn={'Elixir.Set',union,2}
+1 148
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',union,2}
+calls=50 1
+1 6007
+fl='Elixir.Enum'
+fn={'Elixir.Enum',reject,2}
+1 126
+cfl=lists
+cfn={lists,reverse,1}
+calls=25 1
+1 204
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,3}
+calls=25 1
+1 6813
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet',union,2}
+1 119
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',set_fold,3}
+calls=50 1
+1 5888
+fl='Elixir.HashSet'
+fn={'Elixir.HashSet','-union/2-fun-1-',2}
+1 80
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',put,2}
+calls=40 1
+1 668
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-3-',2}
+1 64
+cfl='Elixir.Set'
+cfn={'Elixir.Set',union,2}
+calls=22 1
+1 2785
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board','-process_move/5-fun-5-',2}
+1 48
+cfl='Elixir.Set'
+cfn={'Elixir.Set',union,2}
+calls=22 1
+1 3079
+fl='Elixir.WeiqiDMC.Board'
+fn={'Elixir.WeiqiDMC.Board',force_opposite_player,1}
+1 19
+cfl='Elixir.WeiqiDMC.Helpers'
+cfn={'Elixir.WeiqiDMC.Helpers',opposite_color,1}
+calls=6 1
+1 10
+fl=fprof
+fn={fprof,apply_start_stop,4}
+1 15
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave',sim_default,2}
+calls=1 1
+1 7653611
+cfl=fprof
+cfn={fprof,'-apply_start_stop/4-after$^0/0-0-',3}
+calls=1 1
+1 3
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave',count_stones,2}
+1 11
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',map,2}
+calls=2 1
+1 76
+cfl='Elixir.Set'
+cfn={'Elixir.Set',size,1}
+calls=2 1
+1 6
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',new,0}
+calls=2 1
+1 3
+cfl='Elixir.Enum'
+cfn={'Elixir.Enum',reduce,3}
+calls=2 1
+1 326
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','-count_stones/2-fun-1-',2}
+1 11
+cfl='Elixir.Set'
+cfn={'Elixir.Set',union,2}
+calls=6 1
+1 291
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','-count_stones/2-fun-0-',2}
+1 10
+cfl='Elixir.HashSet'
+cfn={'Elixir.HashSet',new,0}
+calls=3 1
+1 3
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','black_wins?',1}
+1 7
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave',count_stones,2}
+calls=2 1
+1 422
+fl=fprof
+fn={fprof,'-apply_start_stop/4-after$^0/0-0-',3}
+1 3
+cfl=pseudo
+cfn=suspend
+calls=1 1
+1 0
+fl='Elixir.WeiqiDMC.Player.MCRave'
+fn={'Elixir.WeiqiDMC.Player.MCRave','outcome?',1}
+1 3
+cfl='Elixir.WeiqiDMC.Player.MCRave'
+cfn={'Elixir.WeiqiDMC.Player.MCRave','black_wins?',1}
+calls=1 1
+1 429
+fl=pseudo
+fn=undefined
+1 0
+cfl=fprof
+cfn={fprof,apply_start_stop,4}
+calls=0 1
+1 7653629
+fl=pseudo
+fn=suspend
+1 31979

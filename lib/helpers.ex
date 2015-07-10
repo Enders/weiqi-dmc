@@ -40,6 +40,8 @@ defmodule WeiqiDMC.Helpers do
     {row, column+1}
   end
 
+  def coordinate_tuple_to_string(nil) do "none" end
+  def coordinate_tuple_to_string(:pass) do "pass" end
   def coordinate_tuple_to_string({row, column}) do
     "#{String.at("ABCDEFGHJKLMNOPQRSTUVWXYZ", column-1)}#{row}"
   end

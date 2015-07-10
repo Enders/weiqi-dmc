@@ -7,10 +7,12 @@ defmodule WeiqiDMC.Board.State do
             komi: 6.5,
             captured_black: 0,
             captured_white: 0,
-            moves: [],
+            moves: 0,
             groups: [],
             next_player: :black,
             coordinate_ko: nil,
+            last_move: nil,
+            consecutive_pass: false,
             board: nil
 
   def to_list(state) do
@@ -47,7 +49,7 @@ defmodule WeiqiDMC.Board.State do
   end
 
   def board_value(state, {row, column}) do
-    elem state.board, coordinate_to_index(state, {row, column})
+    elem state.board, (row-1)*state.size+(column-1)
   end
 
   def empty_board(size) do
@@ -80,7 +82,8 @@ defmodule WeiqiDMC.Board.State do
 
     """
       Next Player: #{state.next_player}
-      Move: #{length(state.moves)}
+      Move: #{state.moves}
+      Last Move: #{Helpers.coordinate_tuple_to_string(state.last_move)}
       Captured White: #{state.captured_white}
       Captured Black: #{state.captured_black}
 

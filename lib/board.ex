@@ -84,7 +84,10 @@ defmodule WeiqiDMC.Board do
   end
 
   def compute_move(state, :pass) do
-    {:ok,  (remove_ko(state, state.coordinate_ko) |> force_opposite_player) }
+    state = (remove_ko(state, state.coordinate_ko) |> force_opposite_player)
+    {:ok,  %{ state | moves: state.moves + 1,
+                      last_move: :pass,
+                      consecutive_pass: state.last_move == :pass } }
   end
 
   def compute_move(state, coordinate) do
@@ -105,12 +108,10 @@ defmodule WeiqiDMC.Board do
     empty        = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == :empty end)
 
     other_player = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == Helpers.opposite_color(color) end)
-                                |> Enum.map(&group_containing(&1, state.groups))
-                                |> Enum.uniq
+                                |> Enum.map(&group_containing(&1, Helpers.opposite_color(color), state.groups))
 
     same_player  = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == color end)
-                                |> Enum.map(&group_containing(&1, state.groups))
-                                |> Enum.uniq
+                                |> Enum.map(&group_containing(&1, color, state.groups))
 
     liberties_same_player_group = Enum.map(same_player, fn ({_, _, liberties}) ->
         length Enum.filter(liberties, fn (liberty) -> liberty != coordinate end)
@@ -123,7 +124,7 @@ defmodule WeiqiDMC.Board do
     if liberties_same_player_group < 1 and length(empty) == 0 and length(capturing) == 0 do
       {:ko, nil}
     else
-      {:ok, {color, empty, capturing}}
+      {:ok, {color, empty, Enum.uniq(capturing)}}
     end
   end
 
@@ -153,6 +154,9 @@ defmodule WeiqiDMC.Board do
     end
 
     {:ok,  %{state | groups: groups,
+                     moves: state.moves + 1,
+                     consecutive_pass: false,
+                     last_move: coordinate,
                      next_player: Helpers.opposite_color(color),
                      coordinate_ko: coordinate_ko,
                      captured_white: state.captured_white + (if color == :black do captured else 0 end),
@@ -164,9 +168,9 @@ defmodule WeiqiDMC.Board do
     State.update_board state, coordinate_ko, :empty
   end
 
-  def group_containing(coordinate, groups) do
-    Enum.find groups, fn ({_, coordinates, _}) ->
-      Set.member? coordinates, coordinate
+  def group_containing(coordinate, color, groups) do
+    Enum.find groups, fn ({group_color, coordinates, _}) ->
+      color == group_color and Set.member?(coordinates, coordinate)
     end
   end
 
@@ -234,6 +238,34 @@ defmodule WeiqiDMC.Board do
     end)
 
     process_capture_group State.update_board(state, capture, :empty), groups, rest
+  end
+
+  def is_eyeish_for?(color, state, coordinate) do
+    surroundings = surroundings(coordinate, state.size)
+    values = surroundings |> Enum.map(fn surrounding -> State.board_value(state, surrounding) end)
+    length(surroundings) == length(Enum.filter(values, fn (value) -> value == color end))
+  end
+
+  def game_over?(state) do
+    length(state.groups) > 0 and benson_everything_alive?(state, state.groups)
+  end
+
+  #http://webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
+  #http://senseis.xmp.net/?BensonsAlgorithm
+  def benson_everything_alive?(_, []) do true end
+  def benson_everything_alive?(state, [{color, coordinates, liberties}|groups]) do
+    Set.size(liberties) > 1 and
+    length(benson_vital_regions(state, {color, coordinates, liberties})) >= 2 and
+    benson_everything_alive?(state, groups)
+  end
+
+  def benson_vital_regions(state, {color, coordinates, liberties}) do
+    Board.enclosed_regions(state, color, coordinates)
+      |> Enum.filter(fn {_, empty_coordinates} ->
+        Enum.all?(empty_coordinates, fn (empty_coordinate) ->
+          Enum.member? liberties, empty_coordinate
+        end)
+      end)
   end
 
   def enclosed_regions(state, color, seed_coordinates) do

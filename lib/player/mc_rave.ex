@@ -2,8 +2,8 @@ defmodule WeiqiDMC.Player.MCRave do
   alias WeiqiDMC.Board
   alias WeiqiDMC.Board.State
 
-  @constant_bias        0.1
-  @heuristic_confidence 10
+  @constant_bias        1
+  @heuristic_confidence 5
 
   def board_hash(board) do
     #Copied from State.to_list ...
@@ -26,19 +26,24 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def generate_move(state, think_time_ms) do
+    :random.seed(:os.timestamp)
     {mega, secs, micro} = :os.timestamp
-    mc_rave_state = mc_rave state,
-                            {mega, secs, micro+think_time_ms*1000}, think_time_ms*1000,
-                            %WeiqiDMC.Player.MCRave.State{}
+    {mc_rave_state, stats} = mc_rave state,
+                             {mega, secs, micro+think_time_ms*1000}, think_time_ms*1000,
+                             %WeiqiDMC.Player.MCRave.State{},
+                             0
+
+    #IO.puts "Simulation: #{stats}"
+
     select_move state, mc_rave_state
   end
 
-  def mc_rave(_, _, remaining_time, mc_rave_state) when remaining_time < 0 do
-    mc_rave_state
+  def mc_rave(_, _, remaining_time, mc_rave_state, stats) when remaining_time < 0 do
+    {mc_rave_state, stats}
   end
 
-  def mc_rave(state, target_time, _, mc_rave_state) do
-    mc_rave state, target_time, :timer.now_diff(target_time, :os.timestamp), simulate(state, mc_rave_state)
+  def mc_rave(state, target_time, _, mc_rave_state, stats) do
+    mc_rave state, target_time, :timer.now_diff(target_time, :os.timestamp), simulate(state, mc_rave_state), stats + 1
   end
 
   def simulate(state, mc_rave_state) do
@@ -102,11 +107,11 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def sim_default(from_state, moves) do
     if game_over?(from_state) do
-      {Enum.reverse(moves), outcome?(from_state)}
+      {moves, outcome?(from_state)}
     else
       new_action = default_policy(from_state)
       {:ok, new_state} = Board.compute_move(from_state, new_action, from_state.next_player)
-      sim_default new_state, [new_action|moves]
+      sim_default new_state, moves ++ [new_action]
     end
   end
 
@@ -127,12 +132,28 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def default_policy(state) do
-    legal_moves = legal_moves state
-    if Enum.empty?(legal_moves) do
+    interesting_moves = legal_moves(state)
+      |> Enum.filter(fn coordinate -> !ruin_perfectly_good_eye?(state, coordinate) end)
+
+    if Enum.empty?(interesting_moves) do
       :pass
     else
-      :random.seed(:os.timestamp)
-      Enum.at legal_moves, :random.uniform(length(legal_moves)) - 1
+      Enum.at interesting_moves, :random.uniform(length(interesting_moves)) - 1
+    end
+  end
+
+  def ruin_perfectly_good_eye?(state, coordinate) do
+    if Enum.empty?(state.groups) do
+      false
+    else
+      coordinate_set = Set.put(HashSet.new, coordinate)
+
+      #Would this move save from an atari? (it's assumed it's a legal move == not a suicide)
+      last_liberty_own_group = Enum.any?(state.groups, fn {color, _, liberties} ->
+        color == state.next_player and liberties == coordinate_set
+      end)
+
+      !last_liberty_own_group and Board.is_eyeish_for?(state.next_player, state, coordinate)
     end
   end
 
@@ -200,35 +221,18 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def black_wins?(state) do
-    (count_stones(state, :black) + state.captured_white) > (count_stones(state, :white) + state.komi + state.captured_black)
+    count_stones(state, :black)  > count_stones(state, :white) + state.komi
   end
 
   def count_stones(state, color) do
-    State.to_list(state)
-      |> Enum.filter(fn({_,_,value}) -> value == color end)
-      |> Enum.count
+    state.groups
+      |> Enum.map(fn({value, coordinates, _}) -> (value == color and coordinates) || HashSet.new end)
+      |> Enum.reduce(HashSet.new, fn (coordinates, acc) -> Set.union(acc, coordinates) end)
+      |> Set.size
   end
 
   def game_over?(state) do
-    length(state.groups) > 0 and benson_everything_alive?(state, state.groups)
-  end
-
-  #http://webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
-  #http://senseis.xmp.net/?BensonsAlgorithm
-  def benson_everything_alive?(_, []) do true end
-  def benson_everything_alive?(state, [{color, coordinates, liberties}|groups]) do
-    Set.size(liberties) > 1 and
-    length(benson_vital_regions(state, {color, coordinates, liberties})) >= 2 and
-    benson_everything_alive?(state, groups)
-  end
-
-  def benson_vital_regions(state, {color, coordinates, liberties}) do
-    Board.enclosed_regions(state, color, coordinates)
-      |> Enum.filter(fn {_, empty_coordinates} ->
-        Enum.all?(empty_coordinates, fn (empty_coordinate) ->
-          Enum.member? liberties, empty_coordinate
-        end)
-      end)
+    state.consecutive_pass
   end
 
   def legal_moves(state) do
