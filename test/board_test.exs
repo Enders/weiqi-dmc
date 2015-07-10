@@ -45,6 +45,7 @@ defmodule WeiqiDMC.BoardTest do
     {:ok, state} = Board.compute_moves state, prep_coor(["A8", "B9"]), "Black"
     {:ok, state} = Board.compute_moves state, prep_coor(["B8", "C9"]), "White"
     {_, state}   = Board.compute_move  state, prep_coor("A9"), "White"
+
     assert state.captured_black == 1
     assert State.board_value(state, "B9") == :ko
     {result, _} = Board.compute_move state, prep_coor("B9"), "Black"

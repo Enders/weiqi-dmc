@@ -4,4 +4,6 @@
 erl_crash.dump
 *.ez
 *.log*
+*.trace
 run.sh
+

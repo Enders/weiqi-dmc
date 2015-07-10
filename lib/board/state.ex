@@ -15,7 +15,6 @@ defmodule WeiqiDMC.Board.State do
 
   def to_list(state) do
     state.board |> Tuple.to_list
-                |> Enum.slice(0, state.size*state.size)
                 |> Enum.chunk(state.size)
                 |> Enum.with_index
                 |> Enum.map(fn {row_data, row} ->
@@ -68,16 +67,16 @@ defmodule WeiqiDMC.Board.State do
                                             |> String.graphemes
                                             |> Enum.join(" ")
 
-    board = state.board |> to_list
-                        |> Enum.sort(fn ({row_1, col_1, _}, {row_2, col_2, _}) ->
-                             row_1 < row_2 or (row_1 == row_2 and col_1 < col_2)
-                           end)
-                        |> Enum.map(fn (x) -> elem(x,2) end)
-                        |> Enum.chunk(state.size)
-                        |> Enum.reverse
-                        |> Enum.with_index
-                        |> Enum.map(&row_to_string(&1, state.size))
-                        |> Enum.join("\n")
+    board = state |> to_list
+                  |> Enum.sort(fn ({row_1, col_1, _}, {row_2, col_2, _}) ->
+                       row_1 < row_2 or (row_1 == row_2 and col_1 < col_2)
+                     end)
+                  |> Enum.map(fn (x) -> elem(x,2) end)
+                  |> Enum.chunk(state.size)
+                  |> Enum.reverse
+                  |> Enum.with_index
+                  |> Enum.map(&row_to_string(&1, state.size))
+                  |> Enum.join("\n")
 
     """
       Next Player: #{state.next_player}

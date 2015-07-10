@@ -210,14 +210,15 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def game_over?(state) do
-    length(state.groups) > 0 and benson_everything_alive? state, state.groups
+    length(state.groups) > 0 and benson_everything_alive?(state, state.groups)
   end
 
   #http://webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
   #http://senseis.xmp.net/?BensonsAlgorithm
   def benson_everything_alive?(_, []) do true end
-  def benson_everything_alive?(state, [group|groups]) do
-    length(benson_vital_regions(state, group)) >= 2 and
+  def benson_everything_alive?(state, [{color, coordinates, liberties}|groups]) do
+    Set.size(liberties) > 1 and
+    length(benson_vital_regions(state, {color, coordinates, liberties})) >= 2 and
     benson_everything_alive?(state, groups)
   end
 

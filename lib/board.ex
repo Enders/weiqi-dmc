@@ -61,6 +61,13 @@ defmodule WeiqiDMC.Board do
     compute_moves state, handicap_coordinates, :black
   end
 
+  def valid_move?(state, coordinate) do
+    case pre_compute_valide_move(state, coordinate) do
+      {:ko, _} -> false
+      {:ok, _} -> true
+    end
+  end
+
   def compute_moves(state, [], _) do
     {:ok, state}
   end
@@ -84,11 +91,14 @@ defmodule WeiqiDMC.Board do
     if State.board_value(state, coordinate) != :empty do
       {:ko, state}
     else
-      compute_valid_move state, coordinate
+      case pre_compute_valide_move(state, coordinate) do
+        {:ko, _} -> {:ko, state}
+        {:ok, precomputed} -> compute_valid_move state, coordinate, precomputed
+      end
     end
   end
 
-  def compute_valid_move(state, coordinate) do
+  def pre_compute_valide_move(state, coordinate) do
     color        = state.next_player
     surroundings = surroundings coordinate, state.size
 
@@ -107,40 +117,46 @@ defmodule WeiqiDMC.Board do
       end) |> Enum.sum
 
     capturing = Enum.filter(other_player, fn({_, _, liberties}) ->
-      liberties == [coordinate]
+      Set.to_list(liberties) == [coordinate]
     end)
 
-    cond do
-      liberties_same_player_group < 1 and length(empty) == 0 and length(capturing) == 0 ->
-        {:ko, state}
-      true ->
-        {state, groups}           = process_move(state, state.groups, coordinate, color, empty)
-        {state, groups, captured} = process_capture(state, groups, capturing, 0)
-
-        state = remove_ko state, state.coordinate_ko
-
-        if captured == 1 do
-          possible_ko_coordinate = capturing |> List.first |> elem(1) |> List.first
-          ko_surroundings = surroundings possible_ko_coordinate, state.size
-          groups_around_ko_in_atari = groups |> Enum.filter(fn({_, coordinates, liberties}) ->
-            length(coordinates) == 1 and liberties == [possible_ko_coordinate] and (ko_surroundings |> Enum.any?(fn(surrounding) ->
-              Enum.member?(coordinates, surrounding)
-            end))
-          end)
-          if length(groups_around_ko_in_atari) == 1 do
-            coordinate_ko = possible_ko_coordinate
-            state = State.update_board state, coordinate_ko, :ko
-          end
-        else
-          coordinate_ko = nil
-        end
-
-        {:ok,  %{state | groups: groups,
-                         next_player: Helpers.opposite_color(color),
-                         coordinate_ko: coordinate_ko,
-                         captured_white: state.captured_white + (if color == :black do captured else 0 end),
-                         captured_black: state.captured_black + (if color == :white do captured else 0 end) } }
+    if liberties_same_player_group < 1 and length(empty) == 0 and length(capturing) == 0 do
+      {:ko, nil}
+    else
+      {:ok, {color, empty, capturing}}
     end
+  end
+
+  def compute_valid_move(state, coordinate, {color, empty, capturing}) do
+    {state, groups}           = process_move(state, state.groups, coordinate, color, empty)
+    {state, groups, captured} = process_capture(state, groups, capturing, 0)
+
+    state = remove_ko state, state.coordinate_ko
+
+    if captured == 1 do
+      possible_ko_coordinate = capturing |> List.first |> elem(1) |> Set.to_list |> List.first
+      ko_surroundings = Enum.into surroundings(possible_ko_coordinate, state.size), HashSet.new
+      groups_around_ko_in_atari = groups |> Enum.filter(fn({_, coordinates, liberties}) ->
+        coordinates = Set.to_list coordinates
+        liberties   = Set.to_list liberties
+        Set.member?(ko_surroundings, List.first(coordinates)) and
+        length(coordinates) == 1 and
+        liberties == [possible_ko_coordinate]
+      end)
+
+      if length(groups_around_ko_in_atari) == 1 do
+        coordinate_ko = possible_ko_coordinate
+        state = State.update_board state, coordinate_ko, :ko
+      end
+    else
+      coordinate_ko = nil
+    end
+
+    {:ok,  %{state | groups: groups,
+                     next_player: Helpers.opposite_color(color),
+                     coordinate_ko: coordinate_ko,
+                     captured_white: state.captured_white + (if color == :black do captured else 0 end),
+                     captured_black: state.captured_black + (if color == :white do captured else 0 end) } }
   end
 
   def remove_ko(state, nil) do state end
@@ -150,7 +166,7 @@ defmodule WeiqiDMC.Board do
 
   def group_containing(coordinate, groups) do
     Enum.find groups, fn ({_, coordinates, _}) ->
-      Enum.member? coordinates, coordinate
+      Set.member? coordinates, coordinate
     end
   end
 
@@ -158,31 +174,30 @@ defmodule WeiqiDMC.Board do
     #Remove the move in the list of liberties for opposite color groups
     groups = groups |>
       Enum.map(fn ({group_color, coordinates, liberties}) ->
-        if group_color == Helpers.opposite_color(color) and Enum.member?(liberties, coordinate) do
-            {group_color, coordinates, liberties -- [coordinate]}
+        if group_color == Helpers.opposite_color(color) do
+          {group_color, coordinates, Set.delete(liberties, coordinate)}
         else
-          {group_color, coordinates, liberties }
+          {group_color, coordinates, liberties}
         end
       end)
 
     #For same group color, find all the groups that have this move as liberty
     #and put them in a list to be merged.
     to_merge = groups |> Enum.filter(fn ({group_color, _, liberties}) ->
-      group_color == color and Enum.member?(liberties, coordinate)
+      group_color == color and Set.member?(liberties, coordinate)
     end)
 
     if !Enum.empty?(to_merge) do
       coordinates = to_merge |> Enum.map(fn ({_, coordinates, _}) -> coordinates end)
-                             |> List.flatten
-                             |> Enum.uniq
+                             |> Enum.reduce(fn (liberties, acc) -> Set.union(acc, liberties) end)
       liberties   = to_merge |> Enum.map(fn ({_, _, liberties}) -> liberties end)
-                             |> List.flatten
-                             |> Enum.uniq
+                             |> Enum.reduce(fn (liberties, acc) -> Set.union(acc, liberties) end)
 
-      merged = {color, [coordinate|coordinates], Enum.uniq((liberties ++ move_liberties) -- [coordinate])}
+      merged = {color, Set.put(coordinates, coordinate), Set.delete(Enum.into(move_liberties, liberties), coordinate)}
+
       groups = (groups -- to_merge) ++ [merged]
     else
-      groups = groups ++ [{color, [coordinate], move_liberties}]
+      groups = groups ++ [{color, Set.put(HashSet.new, coordinate), Enum.into(move_liberties, HashSet.new)}]
     end
 
     { State.update_board(state, coordinate, color), groups }
@@ -193,8 +208,8 @@ defmodule WeiqiDMC.Board do
   end
 
   def process_capture(state, groups, [{_, coordinates, _}|rest], captured) do
-    {state, groups} = process_capture_group(state, groups, coordinates)
-    process_capture state, groups, rest, captured + length(coordinates)
+    {state, groups} = process_capture_group(state, groups, Set.to_list(coordinates))
+    process_capture state, groups, rest, captured + Set.size(coordinates)
   end
 
   def process_capture_group(state, groups, []) do
@@ -204,27 +219,21 @@ defmodule WeiqiDMC.Board do
   def process_capture_group(state, groups, [capture|rest]) do
     #Remove all the groups containing the removed stone
     groups = groups |> Enum.reject(fn ({_, coordinates, _}) ->
-      Enum.member?(coordinates, capture)
+      Set.member?(coordinates, capture)
     end)
 
-    surroundings = surroundings capture, state.size
+    surroundings = Enum.into surroundings(capture, state.size), HashSet.new
 
     #Add liberties to the surrounding groups
     groups = groups |> Enum.map(fn ({color, coordinates, liberties}) ->
-      if coordinates -- surroundings != coordinates do
-        {color, coordinates, Enum.uniq(liberties ++ [capture])}
+      if Set.size(Set.intersection(coordinates, surroundings)) > 0 do
+        {color, coordinates, Set.put(liberties, capture)}
       else
         {color, coordinates, liberties}
       end
     end)
 
     process_capture_group State.update_board(state, capture, :empty), groups, rest
-  end
-
-  def valid_move?(state, coordinate) do
-    #TODO: make it way faster by not computing the new board
-    {result, _} = compute_move(state, coordinate)
-    result == :ok
   end
 
   def enclosed_regions(state, color, seed_coordinates) do
