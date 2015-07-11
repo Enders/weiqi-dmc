@@ -6,5 +6,5 @@ erl_crash.dump
 *.log*
 *.trace
 profile.*
-run.sh
+*.sh
 

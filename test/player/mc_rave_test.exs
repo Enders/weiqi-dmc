@@ -24,7 +24,8 @@ defmodule WeiqiDMC.Player.McRaveTest do
                                 "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "J2",
                                 "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "J1" ], "White"
 
-    assert Player.default_policy(Board.force_next_player(state, :black)) == {9,1}
+    {move, _} = Player.default_policy(Board.force_next_player(state, :black))
+    assert move == {9,1}
     assert Player.default_policy(Board.force_next_player(state, :white)) == :pass
   end
 
@@ -247,6 +248,6 @@ defmodule WeiqiDMC.Player.McRaveTest do
     state = %{state | moves: 0}
 
     assert Player.outcome?(state) == 1
-    assert Player.generate_move(Board.force_next_player(state, :white), 200) == {9,2}
+    assert Player.generate_move(Board.force_next_player(state, :white), 100) == {9,2}
   end
 end

@@ -27,23 +27,21 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def generate_move(state, think_time_ms) do
     :random.seed(:os.timestamp)
-    {mega, secs, micro} = :os.timestamp
-    {mc_rave_state, stats} = mc_rave state,
-                             {mega, secs, micro+think_time_ms*1000}, think_time_ms*1000,
-                             %WeiqiDMC.Player.MCRave.State{},
-                             0
 
-    # IO.puts "Simulation: #{stats}"
+    {mc_rave_state, _} = mc_rave state, think_time_ms*1000,
+                                 %WeiqiDMC.Player.MCRave.State{}, 0
+
 
     select_move state, mc_rave_state
   end
 
-  def mc_rave(_, _, remaining_time, mc_rave_state, stats) when remaining_time < 0 do
+  def mc_rave(_, remaining_time, mc_rave_state, stats) when remaining_time < 0 do
     {mc_rave_state, stats}
   end
 
-  def mc_rave(state, target_time, _, mc_rave_state, stats) do
-    mc_rave state, target_time, :timer.now_diff(target_time, :os.timestamp), simulate(state, mc_rave_state), stats + 1
+  def mc_rave(state, remaining_time, mc_rave_state, stats) do
+    {elapsed, mc_rave_state} = :timer.tc &simulate/2, [state, mc_rave_state]
+    mc_rave state, remaining_time - elapsed, mc_rave_state, stats + 1
   end
 
   def simulate(state, mc_rave_state) do
@@ -111,7 +109,10 @@ defmodule WeiqiDMC.Player.MCRave do
       {moves, outcome?(from_state)}
     else
       new_action = default_policy(from_state)
-      {:ok, new_state} = Board.compute_move(from_state, new_action, from_state.next_player)
+      {:ok, new_state} = case new_action do
+        :pass -> Board.compute_move(from_state, :pass)
+        {coordinate, precomputed} -> Board.compute_valid_move(from_state, coordinate, precomputed)
+      end
       sim_default new_state, moves ++ [new_action]
     end
   end
@@ -139,8 +140,11 @@ defmodule WeiqiDMC.Player.MCRave do
   def default_policy(_, []) do :pass end
   def default_policy(state, candidates) do
     move = Enum.at candidates, :random.uniform(length(candidates)) - 1
-    if Board.valid_move?(state, move) and !ruin_perfectly_good_eye?(state, move) do
-      move
+    if !ruin_perfectly_good_eye?(state, move) do
+      case Board.pre_compute_valid_move(state, move, true) do
+        {:ok, computed} -> {move, computed}
+        {:ko, nil} -> default_policy(state, candidates -- [move])
+      end
     else
       default_policy state, candidates -- [move]
     end

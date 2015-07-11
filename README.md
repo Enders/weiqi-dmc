@@ -25,9 +25,9 @@ For profiling, you'll need to run `mix deps.get`, there are no other dependencie
 Many GTP front-end seem particularity finicky with the path to the binary, so I ended-up just writing a simple bash script (chmod +x) and use the path to that script:
 
     #!/bin/bash
-    cd FULL_PATH/TO/PROJECT && FULL_PATH/TO/MIX/BINARY run -e "WeiqiDMC.start_gtp_server"`
+    cd FULL_PATH/TO/PROJECT && MIX_ENV=prod FULL_PATH/TO/MIX/BINARY run -e "WeiqiDMC.start_gtp_server"`
 
-I used *Quarry* to test it out.
+I used *Quarry* to test it out. Don't forget to run `MIX_ENV=prod mix compile` first :)
 
 **The tests**
 
