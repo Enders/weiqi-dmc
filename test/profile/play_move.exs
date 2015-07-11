@@ -7,7 +7,6 @@ defmodule WeiqiDMC.Profile.PlayMove do
 
   def run do
     state = State.empty_board(9) |> Board.force_next_player(:black)
-
     :random.seed(:os.timestamp)
 
     #Slow... like SUPER SLOW

@@ -33,7 +33,7 @@ defmodule WeiqiDMC.Player.MCRave do
                              %WeiqiDMC.Player.MCRave.State{},
                              0
 
-    #IO.puts "Simulation: #{stats}"
+    # IO.puts "Simulation: #{stats}"
 
     select_move state, mc_rave_state
   end
@@ -107,6 +107,7 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def sim_default(from_state, moves) do
     if game_over?(from_state) do
+      # IO.puts State.to_string(from_state)
       {moves, outcome?(from_state)}
     else
       new_action = default_policy(from_state)
@@ -132,13 +133,16 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def default_policy(state) do
-    interesting_moves = legal_moves(state)
-      |> Enum.filter(fn coordinate -> !ruin_perfectly_good_eye?(state, coordinate) end)
+    default_policy state, State.empty_coordinates(state)
+  end
 
-    if Enum.empty?(interesting_moves) do
-      :pass
+  def default_policy(_, []) do :pass end
+  def default_policy(state, candidates) do
+    move = Enum.at candidates, :random.uniform(length(candidates)) - 1
+    if Board.valid_move?(state, move) and !ruin_perfectly_good_eye?(state, move) do
+      move
     else
-      Enum.at interesting_moves, :random.uniform(length(interesting_moves)) - 1
+      default_policy state, candidates -- [move]
     end
   end
 

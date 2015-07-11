@@ -177,9 +177,9 @@ defmodule WeiqiDMC.Player.McRaveTest do
 
     mc_rave_state = Player.new_node(state, :root, mc_rave_state)
 
-    assert Dict.fetch!(mc_rave_state.n,       {state_hash, {9,1}}) == 10
+    assert Dict.fetch!(mc_rave_state.n,       {state_hash, {9,1}}) == 5
     assert Dict.fetch!(mc_rave_state.q,       {state_hash, {9,1}}) == 0.5
-    assert Dict.fetch!(mc_rave_state.n_tilde, {state_hash, {9,1}}) == 10
+    assert Dict.fetch!(mc_rave_state.n_tilde, {state_hash, {9,1}}) == 5
     assert Dict.fetch!(mc_rave_state.q_tilde, {state_hash, {9,1}}) == 0.5
   end
 
@@ -243,7 +243,10 @@ defmodule WeiqiDMC.Player.McRaveTest do
                                "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2", "J2",
                                "A1",       "C1", "D1", "E1",       "G1", "H1", "J1"], "White"
 
+    #Reset move counter to make it easier to debug outliers
+    state = %{state | moves: 0}
+
     assert Player.outcome?(state) == 1
-    assert Player.generate_move(Board.force_next_player(state, :white), 300) == {9,2}
+    assert Player.generate_move(Board.force_next_player(state, :white), 200) == {9,2}
   end
 end

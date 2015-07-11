@@ -62,7 +62,7 @@ defmodule WeiqiDMC.Board do
   end
 
   def valid_move?(state, coordinate) do
-    case pre_compute_valide_move(state, coordinate) do
+    case pre_compute_valide_move(state, coordinate, false) do
       {:ko, _} -> false
       {:ok, _} -> true
     end
@@ -94,37 +94,62 @@ defmodule WeiqiDMC.Board do
     if State.board_value(state, coordinate) != :empty do
       {:ko, state}
     else
-      case pre_compute_valide_move(state, coordinate) do
+      case pre_compute_valide_move(state, coordinate, true) do
         {:ko, _} -> {:ko, state}
         {:ok, precomputed} -> compute_valid_move state, coordinate, precomputed
       end
     end
   end
 
-  def pre_compute_valide_move(state, coordinate) do
-    color        = state.next_player
-    surroundings = surroundings coordinate, state.size
+  def pre_compute_valide_move(state, coordinate, return_pre_computed) do
+    color          = state.next_player
+    coordinate_set = Set.put(HashSet.new, coordinate)
+    surroundings   = surroundings coordinate, state.size
+    empty          = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == :empty end)
 
-    empty        = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == :empty end)
+    other_player   = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == Helpers.opposite_color(color) end)
+                                  |> Enum.map(&group_containing(&1, Helpers.opposite_color(color), state.groups))
 
-    other_player = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == Helpers.opposite_color(color) end)
-                                |> Enum.map(&group_containing(&1, Helpers.opposite_color(color), state.groups))
+    if length(empty) == 0 do
+      capturing = Enum.filter(other_player, fn({_, _, liberties}) ->
+        liberties == coordinate_set
+      end)
+      if length(capturing) == 0 do
+        same_player = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == color end)
+                                  |> Enum.map(&group_containing(&1, color, state.groups))
 
-    same_player  = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == color end)
-                                |> Enum.map(&group_containing(&1, color, state.groups))
+        liberties_same_player_group = Enum.map(same_player, fn ({_, _, liberties}) ->
+          Set.size(liberties) - (if Set.member?(liberties, coordinate) do 1 else 0 end)
+        end) |> Enum.sum
 
-    liberties_same_player_group = Enum.map(same_player, fn ({_, _, liberties}) ->
-        length Enum.filter(liberties, fn (liberty) -> liberty != coordinate end)
-      end) |> Enum.sum
-
-    capturing = Enum.filter(other_player, fn({_, _, liberties}) ->
-      Set.to_list(liberties) == [coordinate]
-    end)
-
-    if liberties_same_player_group < 1 and length(empty) == 0 and length(capturing) == 0 do
-      {:ko, nil}
+        if liberties_same_player_group < 1 do
+          {:ko, nil}
+        else
+          if return_pre_computed do
+            capturing = Enum.filter(other_player, fn({_, _, liberties}) ->
+              liberties == coordinate_set
+            end)
+            {:ok, {color, empty, Enum.uniq(capturing)}}
+          else
+            {:ok, nil}
+          end
+        end
+      else
+        if return_pre_computed do
+          {:ok, {color, empty, Enum.uniq(capturing)}}
+        else
+          {:ok, nil}
+        end
+      end
     else
-      {:ok, {color, empty, Enum.uniq(capturing)}}
+      if return_pre_computed do
+        capturing = Enum.filter(other_player, fn({_, _, liberties}) ->
+          liberties == coordinate_set
+        end)
+        {:ok, {color, empty, Enum.uniq(capturing)}}
+      else
+        {:ok, nil}
+      end
     end
   end
 

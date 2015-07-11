@@ -30,9 +30,9 @@ defmodule WeiqiDMC.Board.State do
   end
 
   def empty_coordinates(state) do
-    state |> to_list
-          |> Enum.filter(fn({_, _, value}) -> value == :empty end)
-          |> Enum.map(fn({row, column, _}) -> {row, column} end)
+    (0..state.size*state.size-1)
+      |> Enum.filter(fn index -> elem(state.board, index) == :empty end)
+      |> Enum.map(fn index -> {trunc(index/state.size)+1, rem(index, state.size)+1} end)
   end
 
   def update_board(state, coordinate, value) when is_bitstring(coordinate) do
