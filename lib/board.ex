@@ -154,15 +154,15 @@ defmodule WeiqiDMC.Board do
   end
 
   def compute_valid_move(state, coordinate, {color, empty, capturing}) do
-    {state, groups}           = process_move(state, state.groups, coordinate, color, empty)
-    {state, groups, captured} = process_capture(state, groups, capturing, 0)
+    state             = process_move(state, coordinate, color, empty)
+    {state, captured} = process_capture(state, capturing, 0)
 
     state = remove_ko state, state.coordinate_ko
 
     if captured == 1 do
       possible_ko_coordinate = capturing |> List.first |> elem(1) |> Set.to_list |> List.first
       ko_surroundings = Enum.into surroundings(possible_ko_coordinate, state.size), HashSet.new
-      groups_around_ko_in_atari = groups |> Enum.filter(fn({_, coordinates, liberties}) ->
+      groups_around_ko_in_atari = state.groups |> Enum.filter(fn({_, coordinates, liberties}) ->
         coordinates = Set.to_list coordinates
         liberties   = Set.to_list liberties
         Set.member?(ko_surroundings, List.first(coordinates)) and
@@ -178,8 +178,7 @@ defmodule WeiqiDMC.Board do
       coordinate_ko = nil
     end
 
-    {:ok,  %{state | groups: groups,
-                     moves: state.moves + 1,
+    {:ok,  %{state | moves: state.moves + 1,
                      consecutive_pass: false,
                      last_move: coordinate,
                      next_player: Helpers.opposite_color(color),
@@ -199,9 +198,9 @@ defmodule WeiqiDMC.Board do
     end
   end
 
-  def process_move(state, groups, coordinate, color, move_liberties) do
+  def process_move(state, coordinate, color, move_liberties) do
     #Remove the move in the list of liberties for opposite color groups
-    groups = groups |>
+    groups = state.groups |>
       Enum.map(fn ({group_color, coordinates, liberties}) ->
         if group_color == Helpers.opposite_color(color) do
           {group_color, coordinates, Set.delete(liberties, coordinate)}
@@ -229,40 +228,38 @@ defmodule WeiqiDMC.Board do
       groups = groups ++ [{color, Set.put(HashSet.new, coordinate), Enum.into(move_liberties, HashSet.new)}]
     end
 
-    { State.update_board(state, coordinate, color), groups }
+    %{ State.update_board(state, coordinate, color) | groups: groups}
   end
 
-  def process_capture(state, groups, [], captured) do
-    {state, groups, captured}
+  def process_capture(state, [], captured) do
+    {state, captured}
   end
 
-  def process_capture(state, groups, [{_, coordinates, _}|rest], captured) do
-    {state, groups} = process_capture_group(state, groups, Set.to_list(coordinates))
-    process_capture state, groups, rest, captured + Set.size(coordinates)
+  def process_capture(state, [{_, coordinates, _}|rest], captured) do
+    state = process_capture_group(state, Set.to_list(coordinates))
+    process_capture state, rest, captured + Set.size(coordinates)
   end
 
-  def process_capture_group(state, groups, []) do
-    {state, groups}
+  def process_capture_group(state, []) do
+    state
   end
 
-  def process_capture_group(state, groups, [capture|rest]) do
-    #Remove all the groups containing the removed stone
-    groups = groups |> Enum.reject(fn ({_, coordinates, _}) ->
-      Set.member?(coordinates, capture)
-    end)
-
+  def process_capture_group(state, [capture|rest]) do
     surroundings = Enum.into surroundings(capture, state.size), HashSet.new
 
-    #Add liberties to the surrounding groups
-    groups = groups |> Enum.map(fn ({color, coordinates, liberties}) ->
-      if Set.size(Set.intersection(coordinates, surroundings)) > 0 do
-        {color, coordinates, Set.put(liberties, capture)}
-      else
-        {color, coordinates, liberties}
-      end
-    end)
+    groups = state.groups |> Enum.filter_map(fn {_, coordinates, _} ->
+        #Remove all the groups containing the removed stone
+        !Set.member?(coordinates, capture)
+      end, fn {color, coordinates, liberties} ->
+        #Add liberties to the surrounding groups
+        if Set.size(Set.intersection(coordinates, surroundings)) > 0 do
+          {color, coordinates, Set.put(liberties, capture)}
+        else
+          {color, coordinates, liberties}
+        end
+      end)
 
-    process_capture_group State.update_board(state, capture, :empty), groups, rest
+    process_capture_group %{ State.update_board(state, capture, :empty) | groups: groups}, rest
   end
 
   def is_eyeish_for?(color, state, coordinate) do

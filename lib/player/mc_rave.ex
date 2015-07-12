@@ -31,7 +31,6 @@ defmodule WeiqiDMC.Player.MCRave do
     {mc_rave_state, _} = mc_rave state, think_time_ms*1000,
                                  %WeiqiDMC.Player.MCRave.State{}, 0
 
-
     select_move state, mc_rave_state
   end
 
