@@ -3,5 +3,6 @@ defmodule WeiqiDMC.Player.MCRave.State do
             q: HashDict.new,
             n_tilde: HashDict.new,
             q_tilde: HashDict.new,
-            tree: nil
+            tree: nil,
+            simulations: 0
 end

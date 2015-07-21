@@ -13,6 +13,7 @@ defmodule WeiqiDMC.Board.State do
             coordinate_ko: nil,
             last_move: nil,
             consecutive_pass: false,
+            handicap: 0,
             board: nil
 
   def to_list(state) do

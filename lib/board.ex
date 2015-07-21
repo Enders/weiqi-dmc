@@ -58,7 +58,7 @@ defmodule WeiqiDMC.Board do
 
   def set_handicap(state, handicap) do
     handicap_coordinates = Helpers.handicap_coordinates(state.size, handicap) |> Enum.map(&Helpers.coordinate_string_to_tuple(&1))
-    compute_moves state, handicap_coordinates, :black
+    compute_moves %{state | handicap: handicap}, handicap_coordinates, :black
   end
 
   def valid_move?(state, coordinate) do
@@ -103,12 +103,12 @@ defmodule WeiqiDMC.Board do
 
   def pre_compute_valid_move(state, coordinate, return_pre_computed) do
     color          = state.next_player
+    opposite_color = Helpers.opposite_color(color)
     coordinate_set = Set.put(HashSet.new, coordinate)
     surroundings   = surroundings coordinate, state.size
     empty          = surroundings |> Enum.filter(fn (surrounding) -> State.board_value(state, surrounding) == :empty end)
-
-    other_player   = surroundings |> Enum.filter_map(&State.board_has_value?(state, &1, Helpers.opposite_color(color)),
-                                                     &group_containing(&1, Helpers.opposite_color(color), state.groups))
+    other_player   = surroundings |> Enum.filter_map(&State.board_has_value?(state, &1, opposite_color),
+                                                     &group_containing(&1, opposite_color, state.groups))
 
     if length(empty) == 0 do
       capturing = Enum.filter(other_player, fn({_, _, liberties}) ->
@@ -199,20 +199,21 @@ defmodule WeiqiDMC.Board do
   end
 
   def process_move(state, coordinate, color, move_liberties) do
-    #Remove the move in the list of liberties for opposite color groups
-    groups = state.groups |>
-      Enum.map(fn ({group_color, coordinates, liberties}) ->
-        if group_color == Helpers.opposite_color(color) do
-          {group_color, coordinates, Set.delete(liberties, coordinate)}
-        else
-          {group_color, coordinates, liberties}
-        end
-      end)
+    opposite_color = Helpers.opposite_color(color)
 
-    #For same group color, find all the groups that have this move as liberty
-    #and put them in a list to be merged.
-    to_merge = groups |> Enum.filter(fn ({group_color, _, liberties}) ->
-      group_color == color and Set.member?(liberties, coordinate)
+    {groups, to_merge} = Enum.partition(state.groups, fn {group_color, _, liberties} ->
+      #For same group color, find all the groups that have this move as liberty
+      #and put them in a list to be merged.
+      !(group_color == color and Set.member?(liberties, coordinate))
+    end)
+
+    groups = Enum.map(groups, fn {group_color, coordinates, liberties} ->
+      #Remove the move in the list of liberties for opposite color groups
+      if group_color == opposite_color do
+        {group_color, coordinates, Set.delete(liberties, coordinate)}
+      else
+        {group_color, coordinates, liberties}
+      end
     end)
 
     if !Enum.empty?(to_merge) do
@@ -223,9 +224,9 @@ defmodule WeiqiDMC.Board do
 
       merged = {color, Set.put(coordinates, coordinate), Set.delete(Enum.into(move_liberties, liberties), coordinate)}
 
-      groups = (groups -- to_merge) ++ [merged]
+      groups = [merged|groups]
     else
-      groups = groups ++ [{color, Set.put(HashSet.new, coordinate), Enum.into(move_liberties, HashSet.new)}]
+      groups = [{color, Set.put(HashSet.new, coordinate), Enum.into(move_liberties, HashSet.new)}|groups]
     end
 
     %{ State.update_board(state, coordinate, color) | groups: groups}
@@ -245,14 +246,14 @@ defmodule WeiqiDMC.Board do
   end
 
   def process_capture_group(state, [capture|rest]) do
-    surroundings = Enum.into surroundings(capture, state.size), HashSet.new
+    surroundings = surroundings(capture, state.size)
 
     groups = state.groups |> Enum.filter_map(fn {_, coordinates, _} ->
         #Remove all the groups containing the removed stone
         !Set.member?(coordinates, capture)
       end, fn {color, coordinates, liberties} ->
         #Add liberties to the surrounding groups
-        if Set.size(Set.intersection(coordinates, surroundings)) > 0 do
+        if Enum.any?(surroundings, fn surrounding -> Set.member?(coordinates, surrounding) end) do
           {color, coordinates, Set.put(liberties, capture)}
         else
           {color, coordinates, liberties}

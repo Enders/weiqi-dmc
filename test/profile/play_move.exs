@@ -10,7 +10,7 @@ defmodule WeiqiDMC.Profile.PlayMove do
     :random.seed(:os.timestamp)
 
     #Slow... like SUPER SLOW
-    :fprof.apply(&MCRave.sim_default/2, [state, []])
+    :fprof.apply(&MCRave.generate_move/2, [state, 2000])
     :fprof.profile
     :fprof.analyse [dest: 'profile.out']
 

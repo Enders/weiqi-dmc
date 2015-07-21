@@ -27,6 +27,7 @@ defmodule WeiqiDMC.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:exprof, "~> 0.2"}]
+    [{:exprof, "~> 0.2"},
+     {:poolboy, github: "devinus/poolboy", tag: "1.5.1"}]
   end
 end

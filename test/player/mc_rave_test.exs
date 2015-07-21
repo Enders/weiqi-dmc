@@ -26,7 +26,7 @@ defmodule WeiqiDMC.Player.McRaveTest do
 
     {move, _} = Player.default_policy(Board.force_next_player(state, :black))
     assert move == {9,1}
-    assert Player.default_policy(Board.force_next_player(state, :white)) == :pass
+    assert Player.default_policy(Board.force_next_player(state, :white)) == {:pass, nil}
   end
 
   test "#tree_insert will insert node when providing parent" do
@@ -250,4 +250,20 @@ defmodule WeiqiDMC.Player.McRaveTest do
     assert Player.outcome?(state) == 1
     assert Player.generate_move(Board.force_next_player(state, :white), 100) == {9,2}
   end
+
+  # test "will pick the actual best move", %{state: state} do
+  #   {:ok, state} = Board.set_handicap state, 6
+
+  #   state = play_moves state, ["E7"], "White"
+  #   state = play_moves state, ["A8"], "Black"
+  #   state = play_moves state, ["F6"], "White"
+  #   state = play_moves state, ["J3"], "Black"
+  #   state = play_moves state, ["G6"], "White"
+  #   state = play_moves state, ["D3"], "Black"
+  #   state = play_moves state, ["H5"], "White"
+  #   state = play_moves state, ["A6"], "Black"
+  #   state = play_moves state, ["G4"], "White"
+
+  #   assert Player.generate_move(state, 1000) == {1,3}
+  # end
 end

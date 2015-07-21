@@ -2,22 +2,8 @@ defmodule WeiqiDMC.Player.MCRave do
   alias WeiqiDMC.Board
   alias WeiqiDMC.Board.State
 
-  @constant_bias        1
+  @constant_bias        0.1
   @heuristic_confidence 5
-
-  def board_hash(board) do
-    #Copied from State.to_list ...
-    #TODO: any other idea?
-    board
-      |> Dict.to_list
-      |> Enum.map(fn ({row, column_dict}) ->
-        column_dict
-          |> Dict.to_list
-          |> Enum.map(fn ({column, value}) ->
-            {row, column, value}
-          end)
-      end)
-  end
 
   #Useful for testing
   def state_hash(state) when is_atom(state) do state end
@@ -25,22 +11,47 @@ defmodule WeiqiDMC.Player.MCRave do
     state.board
   end
 
-  def generate_move(state, think_time_ms) do
+  def generate_move(state, think_time_ms, show_stats \\ false) do
     :random.seed(:os.timestamp)
 
-    {mc_rave_state, _} = mc_rave state, think_time_ms*1000,
-                                 %WeiqiDMC.Player.MCRave.State{}, 0
+    mc_rave_state = mc_rave state, think_time_ms*1000, %WeiqiDMC.Player.MCRave.State{}
 
-    select_move state, mc_rave_state
+    if show_stats do
+      show_stats(state, mc_rave_state)
+    end
+
+    select_move state, mc_rave_state, true
   end
 
-  def mc_rave(_, remaining_time, mc_rave_state, stats) when remaining_time < 0 do
-    {mc_rave_state, stats}
+  def show_stats(state, mc_rave_state) do
+    IO.puts "\nMove generation"
+    IO.puts "---------------"
+
+    IO.puts State.to_string(state)
+
+    state_hash = state_hash state
+
+    Dict.keys(mc_rave_state.q) |> Enum.each(fn {hash, move} ->
+      if hash == state_hash do
+        n    = Dict.get(mc_rave_state.n, {hash, move}, 0)
+        q    = Dict.get(mc_rave_state.q, {hash, move}, 0)
+        eval = eval(hash, move, mc_rave_state)
+        IO.puts "#{WeiqiDMC.Helpers.coordinate_tuple_to_string(move)} -> N=#{n}, Q=#{q}, Eval=#{eval}"
+      end
+    end)
+
+    move = select_move state, mc_rave_state, true
+    IO.puts "Total simulation: #{mc_rave_state.simulations}"
+    IO.puts "Selected moved: #{WeiqiDMC.Helpers.coordinate_tuple_to_string(move)} \n\n"
   end
 
-  def mc_rave(state, remaining_time, mc_rave_state, stats) do
+  def mc_rave(_, remaining_time, mc_rave_state) when remaining_time < 0 do
+    mc_rave_state
+  end
+
+  def mc_rave(state, remaining_time, mc_rave_state) do
     {elapsed, mc_rave_state} = :timer.tc &simulate/2, [state, mc_rave_state]
-    mc_rave state, remaining_time - elapsed, mc_rave_state, stats + 1
+    mc_rave state, remaining_time - elapsed, mc_rave_state
   end
 
   def simulate(state, mc_rave_state) do
@@ -49,7 +60,10 @@ defmodule WeiqiDMC.Player.MCRave do
     backup mc_rave_state, known_states, known_actions, missing_actions, outcome
   end
 
-  def backup(mc_rave_state, [], _, _, _) do mc_rave_state end
+  def backup(mc_rave_state, [], _, _, _) do
+    %{mc_rave_state | simulations: mc_rave_state.simulations + 1}
+  end
+
   def backup(mc_rave_state, [known_state|known_states], [known_action|known_actions], missing_actions, outcome) do
     state_hash = state_hash(known_state)
     key = {state_hash, known_action}
@@ -65,8 +79,6 @@ defmodule WeiqiDMC.Player.MCRave do
     backup mc_rave_state, known_states, known_actions, missing_actions, outcome
   end
 
-  #TODO: what does this do? Once you know, find a better name than the names
-  #      from the algorithm.
   def backup_tilde(mc_rave_state, _, _, index, _) when index <= 0 do mc_rave_state end
   def backup_tilde(mc_rave_state, state_hash, all_actions, index, outcome) do
     u = length(all_actions) - index
@@ -92,10 +104,10 @@ defmodule WeiqiDMC.Player.MCRave do
       state_hash = state_hash state
       if !tree_member?(mc_rave_state.tree, state_hash) do
         parent_hash = states |> List.first |> state_hash
-        new_action = default_policy(state)
+        {new_action, _} = default_policy(state)
         {Enum.reverse([state|states]), Enum.reverse([new_action|actions]), new_node(state, parent_hash, mc_rave_state)}
       else
-        new_action = select_move(state, mc_rave_state)
+        new_action = select_move(state, mc_rave_state, false)
         {:ok, new_state} = Board.compute_move(state, new_action, state.next_player)
         sim_tree [new_state|[state|states]], [new_action|actions], mc_rave_state
       end
@@ -104,19 +116,18 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def sim_default(from_state, moves) do
     if game_over?(from_state) do
-      # IO.puts State.to_string(from_state)
       {moves, outcome?(from_state)}
     else
       new_action = default_policy(from_state)
       {:ok, new_state} = case new_action do
-        :pass -> Board.compute_move(from_state, :pass)
+        {:pass, _} -> Board.compute_move(from_state, :pass)
         {coordinate, precomputed} -> Board.compute_valid_move(from_state, coordinate, precomputed)
       end
       sim_default new_state, moves ++ [new_action]
     end
   end
 
-  def select_move(state, mc_rave_state) do
+  def select_move(state, mc_rave_state, allow_resign) do
     legal_moves = legal_moves state
     state_hash = state_hash state
 
@@ -125,9 +136,19 @@ defmodule WeiqiDMC.Player.MCRave do
     else
       state_hash = state_hash state
       if state.next_player == :black do
-        Enum.max_by(legal_moves, fn(move) -> eval(state_hash, move, mc_rave_state) end)
+        move = Enum.max_by(legal_moves, fn(move) -> eval(state_hash, move, mc_rave_state) end)
+        if allow_resign and eval(state_hash, move, mc_rave_state) < 0.3 do
+          :resign
+        else
+          move
+        end
       else
-        Enum.min_by(legal_moves, fn(move) -> eval(state_hash, move, mc_rave_state) end)
+        move = Enum.min_by(legal_moves, fn(move) -> eval(state_hash, move, mc_rave_state) end)
+        if allow_resign and eval(state_hash, move, mc_rave_state) > 0.7 do
+          :resign
+        else
+          move
+        end
       end
     end
   end
@@ -136,7 +157,7 @@ defmodule WeiqiDMC.Player.MCRave do
     default_policy state, State.empty_coordinates(state)
   end
 
-  def default_policy(_, []) do :pass end
+  def default_policy(_, []) do {:pass, nil} end
   def default_policy(state, candidates) do
     move = Enum.at candidates, :random.uniform(length(candidates)) - 1
     if !ruin_perfectly_good_eye?(state, move) do
@@ -228,7 +249,9 @@ defmodule WeiqiDMC.Player.MCRave do
   end
 
   def black_wins?(state) do
-    count_stones(state, :black)  > count_stones(state, :white) + state.komi
+    black_points = count_stones(state, :black)
+    white_points = count_stones(state, :white) + state.komi
+    black_points - white_points > 0
   end
 
   def count_stones(state, color) do
