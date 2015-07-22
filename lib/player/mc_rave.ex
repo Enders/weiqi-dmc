@@ -2,8 +2,12 @@ defmodule WeiqiDMC.Player.MCRave do
   alias WeiqiDMC.Board
   alias WeiqiDMC.Board.State
 
+  import WeiqiDMC.Board.Outcome, only: [outcome?: 1, game_over?: 1]
+  import WeiqiDMC.Board.Reading, only: [ruin_perfectly_good_eye?: 2, self_atari?: 2]
+
   @workers              10
-  @constant_bias        0.1
+  @random_per_sim       20
+  @constant_bias        0.5
   @heuristic_confidence 10
 
   #Useful for testing
@@ -82,7 +86,7 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def simulate(state, mc_rave_state) do
     {known_states, known_actions, new_node} = sim_tree [state], [], mc_rave_state
-    {missing_actions, outcome}              = multiple_sim_default List.last(known_states), HashSet.new, @workers*2, @workers*2, 0
+    {missing_actions, outcome}              = multiple_sim_default List.last(known_states), HashSet.new, @random_per_sim, @random_per_sim, 0
     {known_states, known_actions, Set.to_list(missing_actions), new_node, outcome}
   end
 
@@ -198,28 +202,13 @@ defmodule WeiqiDMC.Player.MCRave do
   def default_policy(_, []) do {:pass, nil} end
   def default_policy(state, candidates) do
     move = Enum.at candidates, :random.uniform(length(candidates)) - 1
-    if !ruin_perfectly_good_eye?(state, move) do
+    if !self_atari?(state, move) and !ruin_perfectly_good_eye?(state, move) do
       case Board.pre_compute_valid_move(state, move, true) do
         {:ok, computed} -> {move, computed}
         {:ko, nil} -> default_policy(state, candidates -- [move])
       end
     else
       default_policy state, candidates -- [move]
-    end
-  end
-
-  def ruin_perfectly_good_eye?(state, coordinate) do
-    if Enum.empty?(state.groups) do
-      false
-    else
-      coordinate_set = Set.put(HashSet.new, coordinate)
-
-      #Would this move save from an atari? (it's assumed it's a legal move == not a suicide)
-      last_liberty_own_group = Enum.any?(state.groups, fn {color, _, liberties} ->
-        color == state.next_player and liberties == coordinate_set
-      end)
-
-      !last_liberty_own_group and Board.is_eyeish_for?(state.next_player, state, coordinate)
     end
   end
 
@@ -241,7 +230,11 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def new_node(state, parent_hash, mc_rave_state) do
     state_hash  = state_hash state
-    legal_moves = legal_moves state
+
+    #TODO: maybe just use empty coordinates
+    legal_moves = state
+      |> State.empty_coordinates
+      |> Enum.filter(&Board.valid_move?(state, &1))
 
     #TODO: extract that 0.5 to a function, it's the heuristic H(s,a), 0.5 -> Qeven
     new_q_tilde = set_base_values mc_rave_state.q_tilde, legal_moves, state_hash, 0.5
@@ -277,35 +270,5 @@ defmodule WeiqiDMC.Player.MCRave do
   def tree_member?({state_hash, []}, needle) do state_hash == needle end
   def tree_member?({state_hash, children}, needle) do
     state_hash == needle or Enum.any?(children, fn (child) -> tree_member?(child, needle) end)
-  end
-
-  #Game utilities
-  #--------------
-
-  def outcome?(state) do
-    if black_wins?(state) do 1 else 0 end
-  end
-
-  def black_wins?(state) do
-    black_points = count_stones(state, :black)
-    white_points = count_stones(state, :white) + state.komi
-    black_points - white_points > 0
-  end
-
-  def count_stones(state, color) do
-    state.groups
-      |> Enum.map(fn({value, coordinates, _}) -> (value == color and coordinates) || HashSet.new end)
-      |> Enum.reduce(HashSet.new, fn (coordinates, acc) -> Set.union(acc, coordinates) end)
-      |> Set.size
-  end
-
-  def game_over?(state) do
-    state.consecutive_pass
-  end
-
-  def legal_moves(state) do
-    state
-      |> State.empty_coordinates
-      |> Enum.filter(&Board.valid_move?(state, &1))
   end
 end

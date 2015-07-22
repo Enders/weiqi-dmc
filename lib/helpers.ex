@@ -1,5 +1,19 @@
 defmodule WeiqiDMC.Helpers do
 
+  def surroundings(coordinate, size) do
+    [{-1, 0}, {1, 0}, {0, 1}, {0, -1}]
+      |> Enum.map(&compute_coordinate_from_delta(&1, coordinate, size))
+      |> Enum.filter(fn (surrounding) -> surrounding != :invalid end)
+  end
+
+  defp compute_coordinate_from_delta({delta_row, delta_column}, {row, column}, size) do
+    cond do
+      row+delta_row < 1 or row+delta_row > size             -> :invalid
+      column+delta_column < 1 or column+delta_column > size -> :invalid
+      true -> {row+delta_row, column+delta_column}
+    end
+  end
+
   def handicap_coordinates(size, handicap) do
     case {size, handicap} do
       {19, 2} -> ["D4", "Q16"]

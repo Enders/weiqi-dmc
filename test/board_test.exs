@@ -70,47 +70,4 @@ defmodule WeiqiDMC.BoardTest do
 
     assert State.board_value(state, "A9") == :empty
   end
-
-  test "calculates regions" do
-    state = Board.from_full_board [:w, :b, :e, :b, :e, :b, :w, :e, :e,
-                                   :w, :b, :w, :e, :w, :b, :w, :e, :e,
-                                   :w, :b, :b, :b, :b, :b, :w, :e, :e,
-                                   :w, :w, :w, :w, :w, :w, :w, :e, :e,
-                                   :e, :e, :e, :e, :b, :e, :e, :b, :b,
-                                   :e, :w, :e, :e, :w, :w, :w, :w, :w,
-                                   :e, :b, :e, :e, :w, :w, :e, :e, :e,
-                                   :e, :e, :e, :e, :w, :w, :e, :w, :e,
-                                   :w, :e, :e, :e, :w, :e, :e, :e, :e], 9
-
-    {color, coordinates, _} = Board.group_containing {9, 6}, :black, state.groups
-
-    assert color == :black
-
-    enclosed_regions = Board.enclosed_regions state, :black, coordinates
-
-    assert length(enclosed_regions) == 2
-  end
-
-  #This is a test for the other enclosed_region implementation
-
-  # test "calculates regions" do
-  #   state = Board.from_full_board [:e, :b, :e, :b, :e, :b, :e, :e, :e,
-  #                                  :b, :b, :b, :b, :e, :b, :e, :w, :e,
-  #                                  :w, :w, :w, :e, :e, :b, :e, :e, :e,
-  #                                  :e, :e, :w, :e, :e, :b, :e, :e, :e,
-  #                                  :e, :e, :w, :w, :w, :b, :b, :b, :b,
-  #                                  :e, :w, :e, :e, :w, :w, :w, :w, :w,
-  #                                  :e, :b, :e, :e, :w, :w, :e, :e, :e,
-  #                                  :e, :e, :e, :e, :w, :w, :e, :w, :e,
-  #                                  :w, :e, :e, :e, :w, :e, :e, :e, :e], 9
-
-  #   regions = Board.enclosed_regions(state)
-  #   black_regions = Enum.filter(regions, fn {color, _}-> color == :black end)
-  #   white_regions = Enum.filter(regions, fn {color, _}-> color == :white end)
-  #   assert length(regions) == 6
-  #   assert length(black_regions) == 3
-  #   assert length(white_regions) == 2
-  #   assert Enum.sum(Enum.map(black_regions, fn {_, coordinates} -> length(coordinates) end)) == 14
-  #   assert Enum.sum(Enum.map(white_regions, fn {_, coordinates} -> length(coordinates) end)) == 27
-  # end
 end
