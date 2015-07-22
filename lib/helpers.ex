@@ -40,7 +40,6 @@ defmodule WeiqiDMC.Helpers do
     {row, column+1}
   end
 
-  def coordinate_tuple_to_string()
   def coordinate_tuple_to_string(nil) do "none" end
   def coordinate_tuple_to_string(:resign) do "resign" end
   def coordinate_tuple_to_string(:pass) do "pass" end

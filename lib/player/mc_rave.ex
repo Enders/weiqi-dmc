@@ -2,25 +2,60 @@ defmodule WeiqiDMC.Player.MCRave do
   alias WeiqiDMC.Board
   alias WeiqiDMC.Board.State
 
+  @workers              10
   @constant_bias        0.1
-  @heuristic_confidence 5
+  @heuristic_confidence 10
 
   #Useful for testing
   def state_hash(state) when is_atom(state) do state end
-  def state_hash(state) do
-    state.board
-  end
+  def state_hash(state) do state.board end
 
   def generate_move(state, think_time_ms, show_stats \\ false) do
     :random.seed(:os.timestamp)
 
-    mc_rave_state = mc_rave state, think_time_ms*1000, %WeiqiDMC.Player.MCRave.State{}
+    workers  = spawn_mc_rave_workers @workers, []
+    {:ok, mc_rave_state_agent} = Agent.start_link(fn -> %WeiqiDMC.Player.MCRave.State{} end)
 
+    Enum.each workers, fn (worker) ->
+      send worker, {:compute, self, mc_rave_state_agent, state}
+    end
+
+    generate_move_loop state, mc_rave_state_agent, :erlang.system_time(:micro_seconds) + think_time_ms*1000, think_time_ms*1000, show_stats
+  end
+
+  def generate_move_loop(state, mc_rave_state_agent, _, remaining_time, show_stats) when remaining_time <= 0 do
+    mc_rave_state = Agent.get(mc_rave_state_agent, &(&1))
     if show_stats do
       show_stats(state, mc_rave_state)
     end
-
     select_move state, mc_rave_state, true
+  end
+
+  def generate_move_loop(state, mc_rave_state_agent, target_time, remaining_time, show_stats) do
+    receive do
+      {:computed, worker, {known_states, known_actions, missing_actions, new_node, outcome}} ->
+        Agent.update(mc_rave_state_agent, fn (mc_rave_state) ->
+          unless new_node == nil do
+            {state, parent_hash} = new_node
+            mc_rave_state = new_node(state, parent_hash, mc_rave_state)
+          end
+          backup mc_rave_state, known_states, known_actions, missing_actions, outcome
+        end)
+        send worker, {:compute, self, mc_rave_state_agent, state}
+        generate_move_loop state, mc_rave_state_agent, target_time, target_time - :erlang.system_time(:micro_seconds), show_stats
+      received ->
+        IO.inspect {:supervisor, self, :received_unknown, received}
+        generate_move_loop state, mc_rave_state_agent, target_time, remaining_time - 100, show_stats
+      after
+        remaining_time ->
+          generate_move_loop state, mc_rave_state_agent, target_time, 0, show_stats
+    end
+  end
+
+  def spawn_mc_rave_workers(0, spawned) do spawned end
+  def spawn_mc_rave_workers(to_spawn, spawned) do
+    pid = spawn_link &WeiqiDMC.Player.MCRave.Worker.compute/0
+    spawn_mc_rave_workers to_spawn - 1, [pid|spawned]
   end
 
   def show_stats(state, mc_rave_state) do
@@ -45,19 +80,10 @@ defmodule WeiqiDMC.Player.MCRave do
     IO.puts "Selected moved: #{WeiqiDMC.Helpers.coordinate_tuple_to_string(move)} \n\n"
   end
 
-  def mc_rave(_, remaining_time, mc_rave_state) when remaining_time < 0 do
-    mc_rave_state
-  end
-
-  def mc_rave(state, remaining_time, mc_rave_state) do
-    {elapsed, mc_rave_state} = :timer.tc &simulate/2, [state, mc_rave_state]
-    mc_rave state, remaining_time - elapsed, mc_rave_state
-  end
-
   def simulate(state, mc_rave_state) do
-    {known_states, known_actions, mc_rave_state} = sim_tree [state], [], mc_rave_state
-    {missing_actions, outcome} = sim_default List.last(known_states), []
-    backup mc_rave_state, known_states, known_actions, missing_actions, outcome
+    {known_states, known_actions, new_node} = sim_tree [state], [], mc_rave_state
+    {missing_actions, outcome}              = multiple_sim_default List.last(known_states), HashSet.new, @workers*2, @workers*2, 0
+    {known_states, known_actions, Set.to_list(missing_actions), new_node, outcome}
   end
 
   def backup(mc_rave_state, [], _, _, _) do
@@ -99,13 +125,13 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def sim_tree([state|states], actions, mc_rave_state) do
     if game_over?(state) do
-      {Enum.reverse(states), Enum.reverse(actions), mc_rave_state}
+      {Enum.reverse(states), Enum.reverse(actions), nil}
     else
       state_hash = state_hash state
       if !tree_member?(mc_rave_state.tree, state_hash) do
         parent_hash = states |> List.first |> state_hash
         {new_action, _} = default_policy(state)
-        {Enum.reverse([state|states]), Enum.reverse([new_action|actions]), new_node(state, parent_hash, mc_rave_state)}
+        {Enum.reverse([state|states]), Enum.reverse([new_action|actions]), {state, parent_hash}}
       else
         new_action = select_move(state, mc_rave_state, false)
         {:ok, new_state} = Board.compute_move(state, new_action, state.next_player)
@@ -114,36 +140,48 @@ defmodule WeiqiDMC.Player.MCRave do
     end
   end
 
+  def multiple_sim_default(_, moves, total_simulation, 0, total_outcome) do
+    {moves, round(total_outcome/total_simulation)}
+  end
+
+  def multiple_sim_default(from_state, moves, total_simulation, remaining_simulation, total_outcome) do
+    {new_moves, outcome} = sim_default from_state, []
+    multiple_sim_default from_state, Set.union(moves, Enum.into(new_moves, HashSet.new)),
+                         total_simulation, remaining_simulation - 1, total_outcome + outcome
+  end
+
   def sim_default(from_state, moves) do
     if game_over?(from_state) do
       {moves, outcome?(from_state)}
     else
-      new_action = default_policy(from_state)
-      {:ok, new_state} = case new_action do
+      {coordinate, precomputed} = default_policy(from_state)
+      {:ok, new_state} = case {coordinate, precomputed} do
         {:pass, _} -> Board.compute_move(from_state, :pass)
         {coordinate, precomputed} -> Board.compute_valid_move(from_state, coordinate, precomputed)
       end
-      sim_default new_state, moves ++ [new_action]
+      sim_default new_state, moves ++ [coordinate]
     end
   end
 
   def select_move(state, mc_rave_state, allow_resign) do
-    legal_moves = legal_moves state
     state_hash = state_hash state
+    considered_moves = Dict.keys(mc_rave_state.q)
+      |> Enum.filter_map(fn {hash, _} -> hash == state_hash end,
+                         fn {_, move} -> move end)
 
-    if Enum.empty?(legal_moves) do
+    if Enum.empty?(considered_moves) do
       :pass
     else
       state_hash = state_hash state
       if state.next_player == :black do
-        move = Enum.max_by(legal_moves, fn(move) -> eval(state_hash, move, mc_rave_state) end)
+        move = Enum.max_by(considered_moves, fn(move) -> eval(state_hash, move, mc_rave_state) end)
         if allow_resign and eval(state_hash, move, mc_rave_state) < 0.3 do
           :resign
         else
           move
         end
       else
-        move = Enum.min_by(legal_moves, fn(move) -> eval(state_hash, move, mc_rave_state) end)
+        move = Enum.min_by(considered_moves, fn(move) -> eval(state_hash, move, mc_rave_state) end)
         if allow_resign and eval(state_hash, move, mc_rave_state) > 0.7 do
           :resign
         else
