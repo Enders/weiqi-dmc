@@ -32,18 +32,18 @@ defmodule WeiqiDMC.Player.MCRave do
     if show_stats do
       show_stats(state, mc_rave_state)
     end
-    select_move state, mc_rave_state, true
+    select_move state, mc_rave_state, false
   end
 
   def generate_move_loop(state, mc_rave_state_agent, target_time, remaining_time, show_stats) do
     receive do
-      {:computed, worker, {known_states, known_actions, missing_actions, new_node, outcome}} ->
+      {:computed, worker, {known_states, known_actions, missing_actions, new_node, outcome, confidence}} ->
         Agent.update(mc_rave_state_agent, fn (mc_rave_state) ->
           unless new_node == nil do
             {state, parent_hash} = new_node
             mc_rave_state = new_node(state, parent_hash, mc_rave_state)
           end
-          backup mc_rave_state, known_states, known_actions, missing_actions, outcome
+          backup mc_rave_state, known_states, known_actions, missing_actions, outcome, confidence
         end)
         send worker, {:compute, self, mc_rave_state_agent, state}
         generate_move_loop state, mc_rave_state_agent, target_time, target_time - :erlang.system_time(:micro_seconds), show_stats
@@ -86,45 +86,45 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def simulate(state, mc_rave_state) do
     {known_states, known_actions, new_node} = sim_tree [state], [], mc_rave_state
-    {missing_actions, outcome}              = multiple_sim_default List.last(known_states), HashSet.new, @random_per_sim, @random_per_sim, 0
-    {known_states, known_actions, Set.to_list(missing_actions), new_node, outcome}
+    {missing_actions, outcome, confidence}  = multiple_sim_default List.last(known_states), HashSet.new, @random_per_sim, []
+    {known_states, known_actions, Set.to_list(missing_actions), new_node, outcome, confidence}
   end
 
-  def backup(mc_rave_state, [], _, _, _) do
+  def backup(mc_rave_state, [], _, _, _, _) do
     %{mc_rave_state | simulations: mc_rave_state.simulations + 1}
   end
 
-  def backup(mc_rave_state, [known_state|known_states], [known_action|known_actions], missing_actions, outcome) do
+  def backup(mc_rave_state, [known_state|known_states], [known_action|known_actions], missing_actions, outcome, confidence) do
     state_hash = state_hash(known_state)
     key = {state_hash, known_action}
-    updated_n = Dict.get(mc_rave_state.n, key, 0) + 1
+    updated_n = Dict.get(mc_rave_state.n, key, 0) + confidence
     updated_q = Dict.get(mc_rave_state.q, key, 0) + (outcome - Dict.get(mc_rave_state.q, key, 0))/updated_n
 
     mc_rave_state = %{mc_rave_state | n: Dict.put(mc_rave_state.n, key, updated_n),
                                       q: Dict.put(mc_rave_state.q, key, updated_q) }
 
     all_actions = ([known_action|known_actions]++missing_actions)
-    mc_rave_state = backup_tilde mc_rave_state, state_hash, all_actions, length(all_actions), outcome
+    mc_rave_state = backup_tilde mc_rave_state, state_hash, all_actions, length(all_actions), outcome, confidence
 
-    backup mc_rave_state, known_states, known_actions, missing_actions, outcome
+    backup mc_rave_state, known_states, known_actions, missing_actions, outcome, confidence
   end
 
-  def backup_tilde(mc_rave_state, _, _, index, _) when index <= 0 do mc_rave_state end
-  def backup_tilde(mc_rave_state, state_hash, all_actions, index, outcome) do
+  def backup_tilde(mc_rave_state, _, _, index, _, _) when index <= 0 do mc_rave_state end
+  def backup_tilde(mc_rave_state, state_hash, all_actions, index, outcome, confidence) do
     u = length(all_actions) - index
     if u > 2 do
       action_u = Enum.at(all_actions, u)
       action_subset = all_actions |> Enum.slice(0..u-2) |> Enum.take_every 2
       if !Enum.member?(action_subset, action_u) do
         key = {state_hash, action_u}
-        updated_n_tilde = Dict.get(mc_rave_state.n_tilde, key, 0) + 1
+        updated_n_tilde = Dict.get(mc_rave_state.n_tilde, key, 0) + confidence
         updated_q_tilde = Dict.get(mc_rave_state.q_tilde, key, 0) + (outcome - Dict.get(mc_rave_state.q_tilde, key, 0))/updated_n_tilde
         mc_rave_state = %{mc_rave_state | n_tilde: Dict.put(mc_rave_state.n_tilde, key, updated_n_tilde),
                                           q_tilde: Dict.put(mc_rave_state.q_tilde, key, updated_q_tilde) }
 
       end
     end
-    backup_tilde mc_rave_state, state_hash, all_actions, index - 2, outcome
+    backup_tilde mc_rave_state, state_hash, all_actions, index - 2, outcome, confidence
   end
 
   def sim_tree([state|states], actions, mc_rave_state) do
@@ -144,14 +144,20 @@ defmodule WeiqiDMC.Player.MCRave do
     end
   end
 
-  def multiple_sim_default(_, moves, total_simulation, 0, total_outcome) do
-    {moves, round(total_outcome/total_simulation)}
+  def multiple_sim_default(_, moves, 0, outcomes) do
+    average = round(Enum.sum(outcomes)/length(outcomes))
+
+    variance = Enum.sum Enum.map(outcomes, fn (outcome) -> (outcome - average) * (outcome - average) end)
+    std_deviation = 1 - :math.sqrt(variance / length(outcomes)) / average
+    {moves, average, std_deviation}
+
+    #{moves, average, 1}
   end
 
-  def multiple_sim_default(from_state, moves, total_simulation, remaining_simulation, total_outcome) do
+  def multiple_sim_default(from_state, moves, remaining_simulation, outcomes) do
     {new_moves, outcome} = sim_default from_state, []
     multiple_sim_default from_state, Set.union(moves, Enum.into(new_moves, HashSet.new)),
-                         total_simulation, remaining_simulation - 1, total_outcome + outcome
+                         remaining_simulation - 1, [outcome|outcomes]
   end
 
   def sim_default(from_state, moves) do

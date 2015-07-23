@@ -4,7 +4,14 @@ defmodule WeiqiDMC.Board.Outcome do
   import WeiqiDMC.Helpers, only: [surroundings: 2, opposite_color: 1]
 
   def outcome?(state) do
-    if black_wins?(state) do 1 else 0 end
+    black_points = count_stones(state, :black)
+    white_points = count_stones(state, :white) + state.komi
+
+    if black_points > white_points do
+      1 + (black_points - white_points)
+    else
+      0 - (white_points - black_points)
+    end
   end
 
   def black_wins?(state) do
