@@ -28,7 +28,7 @@ defmodule WeiqiDMC.Player.McRaveTest do
     state = play_moves state, ["A9"], "White"
 
     Enum.each(1..100, fn (_) ->
-      {_, outcome} = Player.sim_default(state, [])
+      {_, outcome} = Player.sim_default(state, [], 0)
       assert outcome >= 1
     end)
   end
@@ -104,7 +104,7 @@ defmodule WeiqiDMC.Player.McRaveTest do
   test "#backup/backup_tilde" do
     mc_rave_state = %MCRaveState{}
 
-    mc_rave_state = Player.backup mc_rave_state, [:state_0, :state_1], [:action_0, :action_1], [:action_2, :action_3, :action_4, :action_5], 1, 1
+    mc_rave_state = Player.backup mc_rave_state, [:state_0, :state_1], [:action_0, :action_1], [:action_2, :action_3, :action_4, :action_5], 1
 
     #t=0
     assert Dict.fetch!(mc_rave_state.n, {:state_0, :action_0}) == 1
@@ -123,7 +123,7 @@ defmodule WeiqiDMC.Player.McRaveTest do
     assert Dict.fetch!(mc_rave_state.n_tilde, {:state_1, :action_5}) == 1
     assert Dict.fetch!(mc_rave_state.q_tilde, {:state_1, :action_5}) == (1-0)/1
 
-    mc_rave_state = Player.backup mc_rave_state, [:state_0, :state_1], [:action_0, :action_1], [:action_6, :action_7, :action_8, :action_9], 0, 1
+    mc_rave_state = Player.backup mc_rave_state, [:state_0, :state_1], [:action_0, :action_1], [:action_6, :action_7, :action_8, :action_9], 0
 
     assert Dict.fetch!(mc_rave_state.n, {:state_0, :action_0}) == 2
     assert Dict.fetch!(mc_rave_state.q, {:state_0, :action_0}) == (1-0)/1 + (0-1)/2
@@ -175,17 +175,15 @@ defmodule WeiqiDMC.Player.McRaveTest do
                                 "A6", "B6", "C6", "D6", "E6", "F6", "G6", "H6", "J6",
                                 "A5", "B5", "C5", "D5", "E5", "F5", "G5", "H5", "J5"], "Black"
 
+    #Remove white chance for more eyes in the center
     state = play_moves state, ["G4", "G3", "G2"], "Black"
 
     state = play_moves state, ["A3", "B3", "C3", "D3",
                                "A2", "B2", "C2", "D2", "E2",                   "J2",
                                                  "D1", "E1", "F1", "G1", "H1", "J1"], "White"
 
-    #Reset move counter to make it easier to debug outliers
-    state = %{state | moves: 0}
-
     assert WeiqiDMC.Board.Outcome.outcome?(state) >= 1
 
-    assert Player.generate_move(Board.force_next_player(state, :white), 5000, false) == {1,2}
+    assert Player.generate_move(Board.force_next_player(state, :white), 5000, true) == {1,2}
   end
 end

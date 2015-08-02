@@ -3,22 +3,25 @@ defmodule WeiqiDMC.Board.Outcome do
   alias WeiqiDMC.Board.State
   import WeiqiDMC.Helpers, only: [surroundings: 2, opposite_color: 1]
 
-  def outcome?(state) do
-    black_points = count_stones(state, :black)
-    white_points = count_stones(state, :white) + state.komi
-
-    if black_points > white_points do
-      1 + (black_points - white_points)
-    else
-      0 - (white_points - black_points)
-    end
+  def outcome?(state, dynamic_komi \\ 0) do
+    if black_wins?(state, dynamic_komi) do 1 else 0 end
   end
 
-  def black_wins?(state) do
+  def black_wins?(state, dynamic_komi) do
     black_points = count_stones(state, :black)
-    white_points = count_stones(state, :white) + state.komi
+    white_points = count_stones(state, :white) + state.komi + dynamic_komi
     black_points - white_points > 0
   end
+
+  #TODO: useful?
+
+  # def dynamic_komi(state, value) do
+  #   if state.moves < 20 do
+  #     state.handicap * 7 * ( 1 - state.moves / 20 )
+  #   else
+  #     value
+  #   end
+  # end
 
   def count_stones(state, color) do
     state.groups

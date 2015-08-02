@@ -2,13 +2,21 @@ defmodule WeiqiDMC.Player.MCRave do
   alias WeiqiDMC.Board
   alias WeiqiDMC.Board.State
 
-  import WeiqiDMC.Board.Outcome, only: [outcome?: 1, game_over?: 1]
+  import WeiqiDMC.Board.Outcome, only: [outcome?: 2, game_over?: 1]
   import WeiqiDMC.Board.Reading, only: [ruin_perfectly_good_eye?: 2, self_atari?: 2]
 
   @workers              10
   @random_per_sim       20
-  @constant_bias        0.5
+
+  #best value is 50 according to original paper, but needs WAY better sim_default
   @heuristic_confidence 10
+
+  #bias value value is from 'Balancing MCTS by Dynamically Adjusting Komi Value, Petr Baudiˇs'
+  @constant_bias        1/3000
+
+  @dynamic_komi_red       0.45
+  @dynamic_komi_green     0.5
+  @dynamic_komi_frequency 1000
 
   #Useful for testing
   def state_hash(state) when is_atom(state) do state end
@@ -37,13 +45,53 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def generate_move_loop(state, mc_rave_state_agent, target_time, remaining_time, show_stats) do
     receive do
-      {:computed, worker, {known_states, known_actions, missing_actions, new_node, outcome, confidence}} ->
+      {:computed, worker, {known_states, known_actions, missing_actions, new_node, outcomes}} ->
         Agent.update(mc_rave_state_agent, fn (mc_rave_state) ->
+
           unless new_node == nil do
-            {state, parent_hash} = new_node
-            mc_rave_state = new_node(state, parent_hash, mc_rave_state)
+            {new_node_state, parent_hash} = new_node
+            mc_rave_state = new_node(new_node_state, parent_hash, mc_rave_state)
           end
-          backup mc_rave_state, known_states, known_actions, missing_actions, outcome, confidence
+
+          outcome = round(Enum.sum(outcomes)/length(outcomes))
+
+          won_simulations = outcomes
+            |> Enum.filter(fn (outcome) ->
+                (state.next_player == :black and outcome == 1) or
+                (state.next_player == :white and outcome == 0)
+              end)
+            |> length
+
+          current_win_rate = won_simulations / length(outcomes)
+
+          new_win_rate = (mc_rave_state.win_rate_count * mc_rave_state.win_rate_average + won_simulations) / (length(outcomes) + mc_rave_state.win_rate_count)
+
+          mc_rave_state = %{ mc_rave_state | simulations: mc_rave_state.simulations + length(outcomes),
+                                             win_rate_average: new_win_rate,
+                                             win_rate_count: mc_rave_state.win_rate_count + length(outcomes) }
+
+          if rem(mc_rave_state.simulations, @dynamic_komi_frequency) == 0 do
+
+            #IO.inspect {:update_win_rate, won_simulations}
+
+            cond do
+              current_win_rate <= @dynamic_komi_red ->
+                komi_update = round(@dynamic_komi_red/(mc_rave_state.win_rate_average+0.1))
+                if komi_update > 4 do komi_update = 4 end
+                mc_rave_state = %{mc_rave_state | win_rate_count: length(outcomes),
+                                                  dynamic_komi: mc_rave_state.dynamic_komi - komi_update }
+              current_win_rate >= @dynamic_komi_green ->
+                komi_update = round(10*(mc_rave_state.win_rate_average - @dynamic_komi_green))
+                if komi_update > 4 do komi_update = 4 end
+                mc_rave_state = %{mc_rave_state | win_rate_count: length(outcomes),
+                                                  dynamic_komi: mc_rave_state.dynamic_komi + komi_update }
+              true -> #pass
+            end
+
+            #IO.inspect {:simulation, mc_rave_state.simulations, current_win_rate, mc_rave_state.dynamic_komi}
+          end
+
+          backup mc_rave_state, known_states, known_actions, missing_actions, outcome
         end)
         send worker, {:compute, self, mc_rave_state_agent, state}
         generate_move_loop state, mc_rave_state_agent, target_time, target_time - :erlang.system_time(:micro_seconds), show_stats
@@ -86,45 +134,45 @@ defmodule WeiqiDMC.Player.MCRave do
 
   def simulate(state, mc_rave_state) do
     {known_states, known_actions, new_node} = sim_tree [state], [], mc_rave_state
-    {missing_actions, outcome, confidence}  = multiple_sim_default List.last(known_states), HashSet.new, @random_per_sim, []
-    {known_states, known_actions, Set.to_list(missing_actions), new_node, outcome, confidence}
+
+    dynamic_komi = if state.next_player == :black do mc_rave_state.dynamic_komi else -mc_rave_state.dynamic_komi end
+
+    {missing_actions, outcomes}  = multiple_sim_default List.last(known_states), HashSet.new, @random_per_sim, [], dynamic_komi
+    {known_states, known_actions, Set.to_list(missing_actions), new_node, outcomes}
   end
 
-  def backup(mc_rave_state, [], _, _, _, _) do
-    %{mc_rave_state | simulations: mc_rave_state.simulations + 1}
-  end
-
-  def backup(mc_rave_state, [known_state|known_states], [known_action|known_actions], missing_actions, outcome, confidence) do
+  def backup(mc_rave_state, [], _, _, _) do mc_rave_state end
+  def backup(mc_rave_state, [known_state|known_states], [known_action|known_actions], missing_actions, outcome) do
     state_hash = state_hash(known_state)
     key = {state_hash, known_action}
-    updated_n = Dict.get(mc_rave_state.n, key, 0) + confidence
+    updated_n = Dict.get(mc_rave_state.n, key, 0) + 1
     updated_q = Dict.get(mc_rave_state.q, key, 0) + (outcome - Dict.get(mc_rave_state.q, key, 0))/updated_n
 
     mc_rave_state = %{mc_rave_state | n: Dict.put(mc_rave_state.n, key, updated_n),
                                       q: Dict.put(mc_rave_state.q, key, updated_q) }
 
     all_actions = ([known_action|known_actions]++missing_actions)
-    mc_rave_state = backup_tilde mc_rave_state, state_hash, all_actions, length(all_actions), outcome, confidence
+    mc_rave_state = backup_tilde mc_rave_state, state_hash, all_actions, length(all_actions), outcome
 
-    backup mc_rave_state, known_states, known_actions, missing_actions, outcome, confidence
+    backup mc_rave_state, known_states, known_actions, missing_actions, outcome
   end
 
-  def backup_tilde(mc_rave_state, _, _, index, _, _) when index <= 0 do mc_rave_state end
-  def backup_tilde(mc_rave_state, state_hash, all_actions, index, outcome, confidence) do
+  def backup_tilde(mc_rave_state, _, _, index, _) when index <= 0 do mc_rave_state end
+  def backup_tilde(mc_rave_state, state_hash, all_actions, index, outcome) do
     u = length(all_actions) - index
     if u > 2 do
       action_u = Enum.at(all_actions, u)
       action_subset = all_actions |> Enum.slice(0..u-2) |> Enum.take_every 2
       if !Enum.member?(action_subset, action_u) do
         key = {state_hash, action_u}
-        updated_n_tilde = Dict.get(mc_rave_state.n_tilde, key, 0) + confidence
+        updated_n_tilde = Dict.get(mc_rave_state.n_tilde, key, 0) + 1
         updated_q_tilde = Dict.get(mc_rave_state.q_tilde, key, 0) + (outcome - Dict.get(mc_rave_state.q_tilde, key, 0))/updated_n_tilde
         mc_rave_state = %{mc_rave_state | n_tilde: Dict.put(mc_rave_state.n_tilde, key, updated_n_tilde),
                                           q_tilde: Dict.put(mc_rave_state.q_tilde, key, updated_q_tilde) }
 
       end
     end
-    backup_tilde mc_rave_state, state_hash, all_actions, index - 2, outcome, confidence
+    backup_tilde mc_rave_state, state_hash, all_actions, index - 2, outcome
   end
 
   def sim_tree([state|states], actions, mc_rave_state) do
@@ -144,32 +192,26 @@ defmodule WeiqiDMC.Player.MCRave do
     end
   end
 
-  def multiple_sim_default(_, moves, 0, outcomes) do
-    average = round(Enum.sum(outcomes)/length(outcomes))
-
-    variance = Enum.sum Enum.map(outcomes, fn (outcome) -> (outcome - average) * (outcome - average) end)
-    std_deviation = 1 - :math.sqrt(variance / length(outcomes)) / average
-    {moves, average, std_deviation}
-
-    #{moves, average, 1}
+  def multiple_sim_default(_, moves, 0, outcomes, _) do
+    {moves, outcomes}
   end
 
-  def multiple_sim_default(from_state, moves, remaining_simulation, outcomes) do
-    {new_moves, outcome} = sim_default from_state, []
+  def multiple_sim_default(from_state, moves, remaining_simulation, outcomes, dynamic_komi) do
+    {new_moves, outcome} = sim_default from_state, [], dynamic_komi
     multiple_sim_default from_state, Set.union(moves, Enum.into(new_moves, HashSet.new)),
-                         remaining_simulation - 1, [outcome|outcomes]
+                         remaining_simulation - 1, [outcome|outcomes], dynamic_komi
   end
 
-  def sim_default(from_state, moves) do
+  def sim_default(from_state, moves, dynamic_komi) do
     if game_over?(from_state) do
-      {moves, outcome?(from_state)}
+      {moves, outcome?(from_state, dynamic_komi)}
     else
       {coordinate, precomputed} = default_policy(from_state)
       {:ok, new_state} = case {coordinate, precomputed} do
         {:pass, _} -> Board.compute_move(from_state, :pass)
         {coordinate, precomputed} -> Board.compute_valid_move(from_state, coordinate, precomputed)
       end
-      sim_default new_state, moves ++ [coordinate]
+      sim_default new_state, moves ++ [coordinate], dynamic_komi
     end
   end
 
@@ -224,7 +266,7 @@ defmodule WeiqiDMC.Player.MCRave do
     n_tilde = Dict.get(mc_rave_state.n_tilde, {state_hash, action}, 0)
     q_tilde = Dict.get(mc_rave_state.q_tilde, {state_hash, action}, 0)
 
-    beta_denom = (n + n_tilde + 4*n_tilde*n*@constant_bias*@constant_bias)
+    beta_denom = (n + n_tilde + n_tilde*n*@constant_bias)
     if beta_denom > 0 do
       beta = n_tilde / beta_denom
     else
